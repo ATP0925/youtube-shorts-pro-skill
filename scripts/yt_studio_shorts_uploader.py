@@ -230,13 +230,25 @@ async def _upload_short_on_page(
         await vis_radio.click()
         await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
 
+    # Wait for raw file byte transfer to finish before publishing/closing tab
+    for poll_idx in range(UPLOAD_CONFIRM_MAX_POLLS):
+        try:
+            up_txt = (await pg.locator(S.UPLOADS_DIALOG).first.inner_text()).lower()
+            if not re.search(r"uploading\s+\d+%", up_txt):
+                break
+            if poll_idx % 3 == 0:
+                log.info("Waiting for Studio file upload transfer to hit 100%%...")
+        except Exception:
+            break
+        await pg.wait_for_timeout(UPLOAD_CONFIRM_POLL_MS)
+
     # Publish
     done_btn = pg.locator(S.DONE_BUTTON).first
     await done_btn.wait_for(state="visible", timeout=UPLOAD_ITEM_TIMEOUT_MS)
     await done_btn.click()
     log.info("Publish clicked — waiting for confirmation...")
 
-    # Wait for confirmation
+    # Wait for confirmation (and verify no active upload transfer remains)
     for _ in range(UPLOAD_CONFIRM_MAX_POLLS):
         await pg.wait_for_timeout(UPLOAD_CONFIRM_POLL_MS)
         try:
@@ -247,6 +259,9 @@ async def _upload_short_on_page(
                     m = re.search(r"(?:youtu\.be/|/shorts/)([\w-]+)", dlg_text)
                     if m:
                         vid_id = m.group(1)
+                low_txt = dlg_text.lower()
+                if re.search(r"uploading\s+\d+%", low_txt):
+                    continue
                 done_keywords = (
                     "video published",
                     "processing will begin",
@@ -254,7 +269,7 @@ async def _upload_short_on_page(
                     "share a link",
                     "checks complete",
                 )
-                if any(k in dlg_text.lower() for k in done_keywords):
+                if any(k in low_txt for k in done_keywords):
                     out["success"] = True
                     close_dlg = share_dlg.locator(S.SHARE_CLOSE_BUTTON).last
                     if await close_dlg.count() > 0 and await close_dlg.is_visible():

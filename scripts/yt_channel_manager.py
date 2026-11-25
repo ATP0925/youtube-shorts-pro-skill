@@ -210,10 +210,20 @@ async def _set_playlist_in_form(pg: Any, playlist_name: str | None) -> bool:
     changed = False
     row = dlg.get_by_text(playlist_name, exact=True).first
     if await row.count() > 0:
-        already = await row.evaluate("""el => {
-            const cb = el.closest('ytcp-checkbox-lit, tp-yt-paper-checkbox, [role="checkbox"], li, .item');
-            return !!(cb && (cb.hasAttribute('checked') || cb.getAttribute('aria-checked') === 'true'));
-        }""")
+        already = await row.evaluate(
+            """el => {
+            const box = el.closest('label, li, .item') || el.parentElement;
+            const cb = box
+                ? box.querySelector('ytcp-checkbox-lit, tp-yt-paper-checkbox, [role="checkbox"]')
+                : null;
+            if (!cb) return false;
+            return !!(
+                cb.hasAttribute('checked')
+                || cb.getAttribute('aria-checked') === 'true'
+                || cb.querySelector('[aria-checked="true"]')
+            );
+        }"""
+        )
         if not already:
             await row.click()
             changed = True
@@ -616,7 +626,11 @@ async def configure_pro_studio_foundation(cdp_url: str | None = None) -> dict[st
                     return { idx, txt: t.toLowerCase() };
                 })"""
                 )
-                wm_idx = next((x["idx"] for x in sec_info if "150" in x["txt"] or "watermark" in x["txt"]), None)
+                wm_keywords = ("150", "watermark", "display time", "entire video")
+                wm_idx = next(
+                    (x["idx"] for x in sec_info if any(k in x["txt"] for k in wm_keywords)),
+                    None,
+                )
                 if wm_idx is not None:
                     already_wm = any(
                         "change" in x["txt"] and "remove" in x["txt"]
@@ -707,6 +721,8 @@ async def backfill_live_shorts(
                 if not vid or cid_item not in by_id:
                     continue
                 yt = by_id[cid_item]["youtube_shorts"]
+                # Clear Studio SPA router before hopping between video edit pages
+                await pg.goto("about:blank")
                 await pg.goto(
                     f"https://studio.youtube.com/video/{vid}/edit",
                     wait_until="domcontentloaded",
