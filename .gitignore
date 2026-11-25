@@ -26,6 +26,8 @@ __pycache__/
 dist/
 build/
 .eggs/
+.venv/
+.ruff_cache/
 
 # Process lock
 *.lock
@@ -40,3 +42,4 @@ build/
 # OS
 Thumbs.db
 .DS_Store
+

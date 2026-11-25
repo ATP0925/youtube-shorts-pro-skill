@@ -1,31 +1,45 @@
-# YouTube Studio & Watch DOM Gotchas (Hard-Won Engineering Notes)
+# YouTube Studio & Watch DOM Gotchas (Engineering Reference)
 
-1. **Polymer Backdrop Interception (`<tp-yt-iron-overlay-backdrop class="opened">`):**
-   Closing a modal or switching tabs quickly can leave an overlay backdrop open that blocks clicking left-nav `#settings-item`. Always click visible `Got it`/`Dismiss`/`Close` buttons, press `Escape`, and remove orphaned backdrops if no dialog remains visible.
+> **Verified Working As Of:** November 2026 (`studio.youtube.com` Polymer / Lit DOM)
+> Single source of truth for selectors: [`scripts/constants.py`](../scripts/constants.py) (`StudioSelectors` & `IGSelectors`).
+
+---
+
+1. **Polymer Backdrop Interception (`tp-yt-iron-overlay-backdrop.opened`):**
+   Closing a modal quickly leaves an overlay backdrop active that intercepts clicks on `#settings-item`. Dismiss modals cleanly and prune orphaned backdrops:
+   ```python
+   await pg.evaluate(
+       "() => document.querySelectorAll('tp-yt-iron-overlay-backdrop.opened').forEach(b => {"
+       " if (!document.querySelector('ytcp-dialog, tp-yt-paper-dialog[aria-hidden=\"false\"]')) b.remove(); })"
+   )
+   ```
 
 2. **Upload Dialog `#toggle-button` Collision:**
-   Never match `#toggle-button` globally inside Studio! The left navigation collapse hamburger also uses `id="toggle-button"`. Always scope strictly inside `ytcp-uploads-dialog` + `:visible:has-text('Show more')`.
+   Never match `#toggle-button` globally inside Studio — the left sidebar hamburger also has `id="toggle-button"`. Always scope inside `ytcp-uploads-dialog` and match visible `Show more` text (`StudioSelectors.SHOW_MORE`).
 
 3. **Dropdown Menu Leakage (`tp-yt-paper-item:has-text(...)`):**
-   Closed YouTube Studio `<tp-yt-paper-menu>` instances stay mounted in the DOM. Always filter `:visible` when picking dropdown items (`tp-yt-paper-item:visible:has-text('English (United States)')`).
+   Closed `<tp-yt-paper-menu>` menus stay mounted in the DOM. Always filter `:visible`:
+   ```python
+   opt = pg.locator(f"tp-yt-paper-item:visible:has-text('{target_lang}')").first
+   ```
 
-4. **Home Tab Switch `aria-label` Flips On Toggle:**
-   When `Show Home tab.` is turned ON, YouTube Studio immediately mutates its `aria-label` to `Hide Home tab.`. Always match `[aria-label*='Home tab']` instead of `'Show Home tab'`.
+4. **Home Tab Switch `aria-label` Mutates On Toggle:**
+   When `Show Home tab.` turns ON, Studio immediately flips its `aria-label` to `Hide Home tab.`. Always match `[aria-label*='Home tab']` (`StudioSelectors.HOME_TAB_TOGGLE`) and read `aria-checked`.
 
 5. **File Input Index Order on `/editing/profile`:**
-   - `input[type='file']` #0 = **Banner image** (`>= 2048x1152`)
-   - `input[type='file']` #1 = **Profile picture** (`>= 98x98`)
-   - `input[type='file']` #2 = **Video watermark** (`150x150`)
-   Always verify by inspecting surrounding container text rather than assuming index order across Studio versions.
+   Do not hardcode input indices blind; inspect surrounding container text:
+   - `input[type='file']` matching `"2048"` / `"banner"` -> Banner (`2560x1440`)
+   - `input[type='file']` matching `"98"` / `"picture"` -> Avatar (`800x800`)
+   - `input[type='file']` matching `"150"` / `"watermark"` -> Video watermark (`150x150`)
 
 6. **Category Unlocks `Game title (optional)`:**
-   `input[aria-label='Game title (optional)']` does NOT exist in DOM if the video's Category is `People & blogs` or `None`. Ensure `#category ytcp-text-dropdown-trigger` -> `Gaming` first, wait `~1.2s`, then type the game title and select the autocomplete item.
+   `input[aria-label='Game title (optional)']` is absent until `Category` is switched to `Gaming`. Select `Gaming`, wait `SCROLL_SETTLE_MS`, then type and pick from autocomplete.
 
 7. **Brand Account vs. Personal Profile on `www.youtube.com`:**
-   Your Studio session may edit Brand Channel `Vice City Vault` while `www.youtube.com` still defaults to your personal Google profile! Before posting an Owner Comment, inspect `#avatar-btn` popup and use `Switch account` if needed.
+   Studio edits the Brand Channel while `www.youtube.com` may still be signed into your personal profile. Inspect `#avatar-btn` -> menu text and click `Switch account` if needed before commenting (`_ensure_www_channel_identity()`).
 
 8. **SPA Stall Navigating Studio -> Watch Page:**
-   Navigating directly from a just-finished `ytcp-uploads-dialog` page to `youtube.com/watch?v=...` in the same tab can stall on Studio SPA hooks. Open a fresh clean `ctx.new_page()` for commenting and close it cleanly in `finally:`.
+   Navigating directly from a completed `ytcp-uploads-dialog` tab to `youtube.com/watch?v=...` can hang on Studio SPA hooks. Always open a fresh `pg.context.new_page()` for comment posting.
 
 9. **Chrome Tab Leak Protection:**
-   If CDP scripts open `ctx.new_page()` and crash without closing them, stale heavy Studio tabs exhaust browser memory and make `connect_over_cdp()` time out. Always wrap `ctx.new_page()` in `try...finally: await pg.close()` and use `timeout=30000`.
+   Stale Studio tabs consume heavy RAM and eventually stall `connect_over_cdp()`. Wrap every `ctx.new_page()` in `try ... finally: await pg.close()`.

@@ -1,32 +1,65 @@
 """
-Portable YouTube Studio Playwright CDP Upload Engine
-----------------------------------------------------
+Portable YouTube Studio Playwright CDP Upload Engine.
+
 Automates end-to-end Shorts publishing through Chrome CDP with full Pro metadata:
 Title, Description, Not Made for Kids, Playlist, Altered Content, Gaming Category,
 Official Game Title, US English Language, Tags, and post-publish Owner CTA Comment.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import sys
 from pathlib import Path
+from typing import Any
+
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config_loader import load_config
+from config_loader import is_cdp_available, load_config
+from constants import (
+    CDP_CONNECT_TIMEOUT_MS,
+    CREATE_BUTTON_TIMEOUT_MS,
+    DROPDOWN_SETTLE_MS,
+    LONG_SETTLE_MS,
+    MAX_STUDIO_DESC_LENGTH,
+    MAX_STUDIO_TITLE_LENGTH,
+    MEDIUM_SETTLE_MS,
+    PAGE_LOAD_TIMEOUT_MS,
+    SETTINGS_OPEN_SETTLE_MS,
+    STEP_NEXT_SETTLE_MS,
+    STUDIO_SETTLE_MS,
+    TITLE_BOX_TIMEOUT_MS,
+    UPLOAD_ATTACH_SETTLE_MS,
+    UPLOAD_CONFIRM_MAX_POLLS,
+    UPLOAD_CONFIRM_POLL_MS,
+    UPLOAD_ITEM_TIMEOUT_MS,
+    StudioSelectors as S,
+)
+from exceptions import AuthGateError, UploadError
+from logger import get_logger
 from yt_channel_manager import (
     _is_google_auth_gate,
     apply_full_video_metadata,
-    is_cdp_available,
     load_channel_state,
     post_and_pin_comment,
 )
 
+log = get_logger(__name__)
 
-async def check_youtube_session_health(cdp_url: str | None = None) -> dict:
+__all__ = ["check_youtube_session_health", "upload_youtube_short"]
+
+
+async def check_youtube_session_health(cdp_url: str | None = None) -> dict[str, Any]:
+    """Verify that YouTube Studio is accessible via CDP.
+
+    Returns:
+        Health report dict with healthy, cdp_available, requires_manual_auth, etc.
+    """
     cfg = load_config()
     cdp = cdp_url or cfg["cdp_url"]
-    health = {
+    health: dict[str, Any] = {
         "healthy": False,
         "cdp_available": False,
         "requires_manual_auth": False,
@@ -34,6 +67,7 @@ async def check_youtube_session_health(cdp_url: str | None = None) -> dict:
         "channel_id": load_channel_state().get("channel_id"),
         "message": "",
     }
+
     if not is_cdp_available(cdp):
         health["message"] = f"CDP port ({cdp}) is offline / not responding."
         return health
@@ -41,22 +75,22 @@ async def check_youtube_session_health(cdp_url: str | None = None) -> dict:
     health["cdp_available"] = True
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.connect_over_cdp(cdp, timeout=30000)
+            browser = await p.chromium.connect_over_cdp(cdp, timeout=CDP_CONNECT_TIMEOUT_MS)
             if not browser.contexts:
                 health["message"] = "Chrome has no active browser context."
                 return health
-            ctx = browser.contexts[0]
-            pg = await ctx.new_page()
+            pg = await browser.contexts[0].new_page()
             try:
                 await pg.bring_to_front()
                 target_cid = health["channel_id"]
                 studio_url = f"https://studio.youtube.com/channel/{target_cid}" if target_cid else "https://studio.youtube.com/"
-                await pg.goto(studio_url, wait_until="domcontentloaded", timeout=35000)
-                await pg.wait_for_timeout(4500)
+                await pg.goto(studio_url, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+                await pg.wait_for_timeout(STUDIO_SETTLE_MS)
 
                 curr_url = pg.url
                 health["current_url"] = curr_url
                 body_text = await pg.locator("body").inner_text()
+
                 if _is_google_auth_gate(curr_url, body_text):
                     health["requires_manual_auth"] = True
                     health["message"] = "Google requires manual verification in Chrome."
@@ -74,13 +108,13 @@ async def check_youtube_session_health(cdp_url: str | None = None) -> dict:
                 return health
             finally:
                 await pg.close()
-    except Exception as e:
-        health["message"] = f"Studio session error: {e}"
+    except Exception as exc:
+        health["message"] = f"Studio session error: {exc}"
         return health
 
 
 async def _upload_short_on_page(
-    pg,
+    pg: Any,
     video_path: str,
     title: str,
     description: str,
@@ -92,68 +126,84 @@ async def _upload_short_on_page(
     game_title: str | None = None,
     altered_content: bool = False,
     pinned_comment: str | None = None,
-) -> dict:
-    out = {"success": False, "video_url": None, "video_id": None, "message": ""}
+) -> dict[str, Any]:
+    """Execute the full upload flow on a Studio page.
+
+    Raises:
+        AuthGateError: Immediately if Google prompts for manual verification.
+        UploadError: If Studio upload UI elements fail to respond.
+    """
+    out: dict[str, Any] = {"success": False, "video_url": None, "video_id": None, "message": ""}
     await pg.bring_to_front()
+
     if not target_cid or f"/channel/{target_cid}" not in pg.url:
-        await pg.goto(studio_home, wait_until="domcontentloaded", timeout=45000)
-        await pg.wait_for_timeout(4500)
+        await pg.goto(studio_home, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+        await pg.wait_for_timeout(STUDIO_SETTLE_MS)
     else:
-        await pg.wait_for_timeout(1500)
+        await pg.wait_for_timeout(LONG_SETTLE_MS)
 
     body_text = await pg.locator("body").inner_text()
     if _is_google_auth_gate(pg.url, body_text):
-        out["message"] = "Google auth verification required in Chrome."
-        return out
+        raise AuthGateError(pg.url)
 
-    create_btn = pg.locator("#create-icon, ytcp-button#create-icon, button[aria-label='Create']").first
-    await create_btn.wait_for(state="visible", timeout=15000)
-    await create_btn.click()
-    await pg.wait_for_timeout(1200)
+    # Open upload dialog
+    try:
+        create_btn = pg.locator(S.CREATE_BUTTON).first
+        await create_btn.wait_for(state="visible", timeout=CREATE_BUTTON_TIMEOUT_MS)
+        await create_btn.click()
+        await pg.wait_for_timeout(DROPDOWN_SETTLE_MS)
 
-    upload_item = pg.locator("#text-item-0, tp-yt-paper-item:has-text('Upload videos')").first
-    await upload_item.wait_for(state="visible", timeout=10000)
-    await upload_item.click()
-    await pg.wait_for_timeout(2000)
+        upload_item = pg.locator(S.UPLOAD_ITEM).first
+        await upload_item.wait_for(state="visible", timeout=UPLOAD_ITEM_TIMEOUT_MS)
+        await upload_item.click()
+        await pg.wait_for_timeout(SETTINGS_OPEN_SETTLE_MS)
+    except Exception as exc:
+        raise UploadError(video_path, f"Could not open Studio upload dialog: {exc}") from exc
 
-    await pg.locator("input[type='file']").first.set_input_files(video_path)
-    print(f"[YT-UPLOADER] Attached {os.path.basename(video_path)}; filling Studio details...", flush=True)
-    await pg.wait_for_timeout(5000)
+    # Attach file
+    await pg.locator(S.FILE_INPUT).first.set_input_files(video_path)
+    log.info("Attached %s; filling Studio details...", os.path.basename(video_path))
+    await pg.wait_for_timeout(UPLOAD_ATTACH_SETTLE_MS)
 
-    title_box = pg.locator("#title-textarea #textbox, ytcp-social-suggestions-textbox[id='title-textarea'] div#textbox").first
-    await title_box.wait_for(state="visible", timeout=25000)
+    # Title
+    title_box = pg.locator(S.TITLE_TEXTBOX).first
+    await title_box.wait_for(state="visible", timeout=TITLE_BOX_TIMEOUT_MS)
     await title_box.click()
     await pg.keyboard.press("Control+A")
     await pg.keyboard.press("Backspace")
-    await pg.keyboard.insert_text(title[:100])
-    await pg.wait_for_timeout(600)
+    await pg.keyboard.insert_text(title[:MAX_STUDIO_TITLE_LENGTH])
+    await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
 
-    desc_box = pg.locator("#description-textarea #textbox, ytcp-social-suggestions-textbox[id='description-textarea'] div#textbox").first
+    # Description
+    desc_box = pg.locator(S.DESC_TEXTBOX).first
     if await desc_box.count() > 0:
         await desc_box.click()
         await pg.keyboard.press("Control+A")
         await pg.keyboard.press("Backspace")
-        await pg.keyboard.insert_text(description[:4900])
-        await pg.wait_for_timeout(600)
+        await pg.keyboard.insert_text(description[:MAX_STUDIO_DESC_LENGTH])
+        await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
 
-    not_kids = pg.locator("tp-yt-paper-radio-button[name='VIDEO_MADE_FOR_KIDS_NOT_MFK']").first
+    # Not Made for Kids
+    not_kids = pg.locator(S.NOT_MADE_FOR_KIDS).first
     if await not_kids.count() > 0:
         await not_kids.scroll_into_view_if_needed()
         await not_kids.click()
-        await pg.wait_for_timeout(500)
+        await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
 
+    # Full metadata
     out["metadata_applied"] = await apply_full_video_metadata(
         pg,
         tags=tags,
         playlist_name=playlist_name,
         game_title=game_title,
         altered_content=altered_content,
-        scope_selector="ytcp-uploads-dialog",
+        scope_selector=S.UPLOADS_DIALOG,
     )
 
+    # Extract video ID
     vid_id = None
     try:
-        link_el = pg.locator("a[href*='youtu.be/'], a[href*='youtube.com/shorts/']").first
+        link_el = pg.locator(S.VIDEO_LINK).first
         if await link_el.count() > 0:
             href = await link_el.get_attribute("href") or ""
             m = re.search(r"(?:youtu\.be/|/shorts/)([\w-]+)", href)
@@ -162,42 +212,46 @@ async def _upload_short_on_page(
     except Exception:
         pass
 
-    for step_name in ["Details -> Elements", "Elements -> Checks", "Checks -> Visibility"]:
-        next_btn = pg.locator("#next-button").first
-        await next_btn.wait_for(state="visible", timeout=10000)
+    # Navigate through dialog steps
+    for step_name in ("Details → Elements", "Elements → Checks", "Checks → Visibility"):
+        next_btn = pg.locator(S.NEXT_BUTTON).first
+        await next_btn.wait_for(state="visible", timeout=UPLOAD_ITEM_TIMEOUT_MS)
         await next_btn.click()
-        print(f"[YT-UPLOADER] Next ({step_name})", flush=True)
-        await pg.wait_for_timeout(1800)
+        log.debug("Next (%s)", step_name)
+        await pg.wait_for_timeout(STEP_NEXT_SETTLE_MS)
 
+    # Set visibility
     vis_name = visibility.upper()
     if vis_name in {"PUBLIC", "UNLISTED", "PRIVATE"}:
-        vis_radio = pg.locator(f"tp-yt-paper-radio-button[name='{vis_name}']").first
-        await vis_radio.wait_for(state="visible", timeout=10000)
+        vis_radio = pg.locator(S.VISIBILITY_RADIO.format(visibility=vis_name)).first
+        await vis_radio.wait_for(state="visible", timeout=UPLOAD_ITEM_TIMEOUT_MS)
         await vis_radio.click()
-        await pg.wait_for_timeout(800)
+        await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
 
-    done_btn = pg.locator("#done-button").first
-    await done_btn.wait_for(state="visible", timeout=10000)
+    # Publish
+    done_btn = pg.locator(S.DONE_BUTTON).first
+    await done_btn.wait_for(state="visible", timeout=UPLOAD_ITEM_TIMEOUT_MS)
     await done_btn.click()
-    print("[YT-UPLOADER] Publish clicked! Waiting for confirmation...", flush=True)
+    log.info("Publish clicked — waiting for confirmation...")
 
-    for _ in range(30):
-        await pg.wait_for_timeout(2000)
+    # Wait for confirmation
+    for _ in range(UPLOAD_CONFIRM_MAX_POLLS):
+        await pg.wait_for_timeout(UPLOAD_CONFIRM_POLL_MS)
         try:
-            share_dlg = pg.locator("ytcp-video-share-dialog, ytcp-uploads-still-processing-dialog, tp-yt-paper-dialog").last
+            share_dlg = pg.locator(S.SHARE_DIALOG).last
             if await share_dlg.count() > 0 and await share_dlg.is_visible():
                 dlg_text = await share_dlg.inner_text()
                 if not vid_id:
                     m = re.search(r"(?:youtu\.be/|/shorts/)([\w-]+)", dlg_text)
                     if m:
                         vid_id = m.group(1)
-                if any(k in dlg_text.lower() for k in ["video published", "processing will begin", "video link", "share a link", "checks complete"]):
+                if any(k in dlg_text.lower() for k in ("video published", "processing will begin", "video link", "share a link", "checks complete")):
                     out["success"] = True
-                    close_dlg = share_dlg.locator("#close-button, ytcp-button:has-text('Close'), button:has-text('Close')").last
+                    close_dlg = share_dlg.locator(S.SHARE_CLOSE_BUTTON).last
                     if await close_dlg.count() > 0 and await close_dlg.is_visible():
                         await close_dlg.click()
                     break
-            elif await pg.locator("ytcp-uploads-dialog").count() == 0 and vid_id:
+            elif await pg.locator(S.UPLOADS_DIALOG).count() == 0 and vid_id:
                 out["success"] = True
                 break
         except Exception:
@@ -208,6 +262,7 @@ async def _upload_short_on_page(
         out["video_url"] = f"https://youtube.com/shorts/{vid_id}"
         if out["success"] and visibility.upper() == "PUBLIC" and pinned_comment:
             out["comment"] = await post_and_pin_comment(pg, vid_id, pinned_comment)
+
     out["message"] = "YouTube Short uploaded and published." if out["success"] else "Upload triggered; check Studio."
     return out
 
@@ -223,9 +278,30 @@ async def upload_youtube_short(
     game_title: str | None = None,
     altered_content: bool = False,
     pinned_comment: str | None = None,
-) -> dict:
+) -> dict[str, Any]:
+    """Upload a YouTube Short with complete pro metadata.
+
+    Args:
+        video_path: Absolute path to the video file.
+        title: Short title (≤100 chars).
+        description: Short description.
+        tags: List of tag strings.
+        channel_id: Override channel ID (defaults to config).
+        visibility: "Public", "Unlisted", or "Private".
+        playlist_name: Playlist to assign.
+        game_title: Official game title for autocomplete.
+        altered_content: Whether content is AI-altered.
+        pinned_comment: Owner CTA comment to post after publish.
+
+    Returns:
+        Result dict with success, video_url, video_id, message.
+
+    Raises:
+        AuthGateError: If Google requires manual verification in Chrome.
+    """
     cfg = load_config()
     cdp = cfg["cdp_url"]
+
     if not os.path.exists(video_path):
         return {"success": False, "video_url": None, "video_id": None, "message": f"Video file missing: {video_path}"}
     if not is_cdp_available(cdp):
@@ -236,19 +312,14 @@ async def upload_youtube_short(
 
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.connect_over_cdp(cdp, timeout=30000)
-            ctx = browser.contexts[0]
-            pg = await ctx.new_page()
+            browser = await p.chromium.connect_over_cdp(cdp, timeout=CDP_CONNECT_TIMEOUT_MS)
+            if not browser.contexts:
+                return {"success": False, "video_url": None, "video_id": None, "message": "Chrome has no active context."}
+            pg = await browser.contexts[0].new_page()
             try:
                 return await _upload_short_on_page(
-                    pg,
-                    video_path,
-                    title,
-                    description,
-                    tags,
-                    studio_home,
-                    target_cid,
-                    visibility,
+                    pg, video_path, title, description, tags,
+                    studio_home, target_cid, visibility,
                     playlist_name=playlist_name,
                     game_title=game_title,
                     altered_content=altered_content,
@@ -259,5 +330,9 @@ async def upload_youtube_short(
                     await pg.close()
                 except Exception:
                     pass
-    except Exception as e:
-        return {"success": False, "video_url": None, "video_id": None, "message": f"Studio upload error: {e}"}
+    except AuthGateError:
+        raise
+    except UploadError as exc:
+        return {"success": False, "video_url": None, "video_id": None, "message": str(exc)}
+    except Exception as exc:
+        return {"success": False, "video_url": None, "video_id": None, "message": f"Studio upload error: {exc}"}

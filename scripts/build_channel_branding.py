@@ -1,41 +1,86 @@
 """
-Parameterized Pro YouTube Channel Branding Asset Generator
-----------------------------------------------------------
-Generates crisp:
-  1. 800x800 circular-safe Neon Gaming Emblem Avatar
-  2. 2560x1440 Banner strictly aligned inside the 1546x423 safe zone
-  3. 150x150 high-contrast Subscribe Video Watermark
+Parameterized Pro YouTube Channel Branding Asset Generator.
+
+Generates crisp, production-quality branding assets:
+  1. **800×800** circular-safe Neon Gaming Emblem Avatar
+  2. **2560×1440** Banner strictly inside the 1546×423 safe zone
+  3. **150×150** high-contrast Subscribe Video Watermark
 """
+
+from __future__ import annotations
 
 import argparse
 import math
+import sys
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from PIL import ImageDraw
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from logger import get_logger
+
+log = get_logger(__name__)
+
+__all__ = ["build_pro_avatar", "build_pro_banner", "build_pro_watermark"]
+
+
+# ── Font loading ────────────────────────────────────────────────────────
 
 def _load_font(size: int, bold: bool = True):
-    candidates = (
-        [
-            r"C:\Windows\Fonts\seguibl.ttf" if bold else r"C:\Windows\Fonts\seguisb.ttf",
-            r"C:\Windows\Fonts\arialbd.ttf" if bold else r"C:\Windows\Fonts\arial.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-            "/System/Library/Fonts/Helvetica.ttc",
-        ]
-    )
+    """Load the best available system font, with cross-platform fallbacks."""
+    try:
+        from PIL import ImageFont
+    except ImportError:
+        log.error("Pillow not installed. Run: pip install Pillow>=10.0")
+        sys.exit(1)
+
+    candidates = [
+        # Windows
+        r"C:\Windows\Fonts\seguibl.ttf" if bold else r"C:\Windows\Fonts\seguisb.ttf",
+        r"C:\Windows\Fonts\arialbd.ttf" if bold else r"C:\Windows\Fonts\arial.ttf",
+        # macOS
+        "/Library/Fonts/Arial Bold.ttf" if bold else "/Library/Fonts/Arial.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/System/Library/Fonts/SFPro.ttf",
+        # Linux
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    ]
     for path in candidates:
         if Path(path).exists():
             try:
                 return ImageFont.truetype(path, size)
             except Exception:
                 pass
+    log.warning("No system font found; falling back to Pillow default bitmap font")
     return ImageFont.load_default()
 
 
-def build_pro_avatar(out_path: Path, badge: str = "VI", label: str = "CREATOR", pill: str = "4K SHORTS"):
+# ── Avatar (800×800) ────────────────────────────────────────────────────
+
+def build_pro_avatar(
+    out_path: Path,
+    badge: str = "VI",
+    label: str = "CREATOR",
+    pill: str = "4K SHORTS",
+) -> None:
+    """Generate an 800×800 neon gaming emblem avatar.
+
+    Args:
+        out_path: Destination file path.
+        badge: Center monogram text (1-3 chars recommended).
+        label: Sub-text below the monogram.
+        pill: Text inside the pill badge at the bottom.
+    """
+    from PIL import Image, ImageDraw
+
     size = 800
     img = Image.new("RGBA", (size, size), (12, 7, 28, 255))
     draw = ImageDraw.Draw(img)
 
+    # Gradient background
     for y in range(size):
         t = y / size
         r = int(16 + 40 * math.sin(t * math.pi))
@@ -43,6 +88,7 @@ def build_pro_avatar(out_path: Path, badge: str = "VI", label: str = "CREATOR", 
         b = int(42 + 35 * (1 - t))
         draw.line([(0, y), (size, y)], fill=(r, g, b, 255))
 
+    # Concentric rings
     draw.ellipse([24, 24, 776, 776], outline=(0, 235, 255, 255), width=16)
     draw.ellipse([46, 46, 754, 754], outline=(255, 45, 145, 255), width=10)
     draw.ellipse([66, 66, 734, 734], fill=(12, 8, 28, 230), outline=(255, 215, 0, 200), width=3)
@@ -51,20 +97,25 @@ def build_pro_avatar(out_path: Path, badge: str = "VI", label: str = "CREATOR", 
     f_sub = _load_font(50, bold=True)
     f_pill = _load_font(34, bold=False)
 
+    # Chromatic aberration badge
     draw.text((388, 305), badge, font=f_badge, fill=(0, 240, 255), anchor="mm")
     draw.text((412, 315), badge, font=f_badge, fill=(255, 40, 140), anchor="mm")
     draw.text((400, 310), badge, font=f_badge, fill=(255, 255, 255), anchor="mm")
 
+    # Label and pill
     draw.text((400, 520), label[:16], font=f_sub, fill=(255, 215, 0), anchor="mm")
     draw.rounded_rectangle([225, 575, 575, 635], radius=28, fill=(255, 35, 130, 245), outline=(0, 240, 255, 255), width=3)
     draw.text((400, 604), pill[:16], font=f_pill, fill=(255, 255, 255), anchor="mm")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.convert("RGB").save(out_path, "PNG")
-    print(f"Saved Avatar (800x800): {out_path}")
+    log.info("Saved Avatar (800×800): %s", out_path)
 
 
-def _draw_palm(draw: ImageDraw.ImageDraw, bx: int, by: int, scale: float, flip: int = 1):
+# ── Palm tree helper ────────────────────────────────────────────────────
+
+def _draw_palm(draw: ImageDraw.ImageDraw, bx: int, by: int, scale: float, flip: int = 1) -> None:
+    """Draw a stylized palm tree silhouette on the banner."""
     pts = []
     for i in range(14):
         t = i / 13.0
@@ -85,16 +136,29 @@ def _draw_palm(draw: ImageDraw.ImageDraw, bx: int, by: int, scale: float, flip: 
         draw.polygon([(top_x, top_y), (cx, cy), (ex, ey), (cx, cy + int(22 * scale))], fill=(10, 5, 24, 255))
 
 
+# ── Banner (2560×1440) ──────────────────────────────────────────────────
+
 def build_pro_banner(
     out_path: Path,
     title: str = "YOUR CHANNEL VAULT",
     subtitle: str = "4K CLIPS  |  VIRAL MOMENTS  |  DAILY SHORTS",
     schedule_pill: str = "NEW SHORTS DAILY  |  9 AM & 5 PM EST",
-):
+) -> None:
+    """Generate a 2560×1440 banner with text in the 1546×423 safe zone.
+
+    Args:
+        out_path: Destination file path.
+        title: Main title text.
+        subtitle: Subtitle below the title.
+        schedule_pill: Text inside the schedule pill badge.
+    """
+    from PIL import Image, ImageDraw
+
     W, H = 2560, 1440
     canvas = Image.new("RGBA", (W, H), (10, 6, 26, 255))
     draw = ImageDraw.Draw(canvas)
 
+    # Gradient sky
     for y in range(H):
         t = y / H
         if t < 0.58:
@@ -105,6 +169,7 @@ def build_pro_banner(
             r, g, b = int(28 - 18 * ot), int(16 + 45 * (1 - ot)), int(75 + 45 * (1 - ot))
         draw.line([(0, y), (W, y)], fill=(r, g, b, 255))
 
+    # Retro sun
     sun_cx, sun_cy, sun_r = 1280, 740, 340
     sun_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     sd = ImageDraw.Draw(sun_layer)
@@ -120,6 +185,7 @@ def build_pro_banner(
     canvas = Image.alpha_composite(canvas, sun_layer)
     draw = ImageDraw.Draw(canvas)
 
+    # Horizon & grid
     horizon_y = 845
     draw.line([(0, horizon_y), (W, horizon_y)], fill=(0, 245, 255, 255), width=6)
     for k in range(-14, 15):
@@ -128,10 +194,11 @@ def build_pro_banner(
         gy = horizon_y + int(((i / 8) ** 1.7) * (H - horizon_y))
         draw.line([(0, gy), (W, gy)], fill=(255, 45, 155, 100), width=3)
 
+    # Palm trees
     for bx, sc, fl in [(390, 1.45, 1), (540, 1.05, 1), (2170, 1.45, -1), (2020, 1.05, -1)]:
         _draw_palm(draw, bx, 960 if sc > 1.2 else 935, sc, flip=fl)
 
-    # 1546x423 center safe-zone glass showcase card
+    # Center safe-zone glass card
     card = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     cd = ImageDraw.Draw(card)
     cd.rounded_rectangle([590, 540, 1970, 900], radius=38, fill=(10, 6, 26, 228), outline=(255, 45, 145, 255), width=6)
@@ -143,19 +210,32 @@ def build_pro_banner(
     f_sub = _load_font(38, bold=False)
     f_pill = _load_font(31, bold=True)
 
+    # Chromatic title
     draw.text((1274, 645), title, font=f_title, fill=(0, 240, 255), anchor="mm")
     draw.text((1286, 653), title, font=f_title, fill=(255, 40, 140), anchor="mm")
     draw.text((1280, 649), title, font=f_title, fill=(255, 255, 255), anchor="mm")
     draw.text((1280, 750), subtitle, font=f_sub, fill=(255, 215, 0), anchor="mm")
+
+    # Schedule pill
     draw.rounded_rectangle([860, 802, 1700, 862], radius=26, fill=(255, 35, 135, 245), outline=(0, 240, 255, 255), width=3)
     draw.text((1280, 831), schedule_pill, font=f_pill, fill=(255, 255, 255), anchor="mm")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(out_path, "PNG")
-    print(f"Saved Banner (2560x1440): {out_path}")
+    log.info("Saved Banner (2560×1440): %s", out_path)
 
 
-def build_pro_watermark(out_path: Path, badge: str = "VI"):
+# ── Watermark (150×150) ─────────────────────────────────────────────────
+
+def build_pro_watermark(out_path: Path, badge: str = "VI") -> None:
+    """Generate a 150×150 Subscribe watermark badge.
+
+    Args:
+        out_path: Destination file path.
+        badge: Center monogram text.
+    """
+    from PIL import Image, ImageDraw
+
     size = 150
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -174,22 +254,34 @@ def build_pro_watermark(out_path: Path, badge: str = "VI"):
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, "PNG")
-    print(f"Saved Watermark (150x150): {out_path}")
+    log.info("Saved Watermark (150×150): %s", out_path)
 
 
-def main():
+# ── CLI ─────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    """CLI entry point for branding asset generation."""
     parser = argparse.ArgumentParser(description="Generate Pro YouTube Channel Branding Assets")
-    parser.add_argument("--badge", default="VI", help="Center monogram inside avatar & watermark")
+    parser.add_argument("--badge", default="VI", help="Center monogram (avatar + watermark)")
     parser.add_argument("--title", default="YOUR CHANNEL", help="Channel title for banner")
+    parser.add_argument("--label", default="CREATOR", help="Label text below avatar monogram")
+    parser.add_argument("--avatar-pill", default="4K SHORTS", help="Bottom pill badge text on avatar")
     parser.add_argument("--subtitle", default="4K CLIPS  |  VIRAL MOMENTS  |  DAILY SHORTS")
     parser.add_argument("--pill", default="NEW SHORTS DAILY  |  9 AM & 5 PM EST")
-    parser.add_argument("--out-dir", default="assets")
+    parser.add_argument("--out-dir", default="assets", help="Output directory for assets")
     args = parser.parse_args()
 
+    try:
+        import PIL  # noqa: F401
+    except ImportError:
+        log.error("Pillow is required. Install with: pip install Pillow>=10.0")
+        sys.exit(1)
+
     out = Path(args.out_dir)
-    build_pro_avatar(out / "avatar_800.png", badge=args.badge, label=args.title.upper(), pill="4K VAULT")
+    build_pro_avatar(out / "avatar_800.png", badge=args.badge, label=args.label.upper(), pill=args.avatar_pill.upper())
     build_pro_banner(out / "banner_2560x1440.png", title=args.title.upper(), subtitle=args.subtitle, schedule_pill=args.pill)
     build_pro_watermark(out / "watermark_150.png", badge=args.badge)
+    log.info("All 3 branding assets generated in %s/", out)
 
 
 if __name__ == "__main__":

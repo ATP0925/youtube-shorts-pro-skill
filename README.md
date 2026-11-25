@@ -5,61 +5,91 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-CDP-green.svg)](https://playwright.dev/python/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/ATP0925/youtube-shorts-pro-skill/actions/workflows/lint.yml/badge.svg)](https://github.com/ATP0925/youtube-shorts-pro-skill/actions)
 
 ---
 
-## What This Does
+## How It Works
 
-This skill automates the **7 core pillars** of running a professional YouTube Shorts channel through Chrome CDP + Playwright:
+```mermaid
+flowchart LR
+    A["📋 Catalog\n(queue/catalog.json)"] --> B["🔍 Validate\n(--verify)"]
+    B --> C{"Pass?"}
+    C -->|Yes| D["📊 Analytics\n(--daily-ops)"]
+    C -->|No| E["❌ Fix Media\nor Metadata"]
+    D --> F["💬 Reply Comments"]
+    F --> G["⬆️ Upload Short\nvia CDP"]
+    G --> H["🏷️ Full Metadata\nPlaylist/Gaming/Tags"]
+    H --> I["📌 Owner Comment\n+ Pin Attempt"]
+    I --> J["✅ History Updated"]
 
-| # | Pillar | Automation |
-|---|--------|------------|
-| 1 | **Eligibility & Legal** | Audits Feature Eligibility tiers, protects AdSense residency |
-| 2 | **Pro Storefront** | Generates banner/avatar/watermark, enables Home Tab & COPPA |
-| 3 | **Media Quality Gate** | Validates 9:16, ≤60s, FFmpeg loudness, title length, metadata |
-| 4 | **Complete Metadata** | Playlist, Gaming category, Game Title, US English, Tags, Altered Content |
-| 5 | **Community Loop** | Posts & pins owner CTA comments, replies to unresponded inbox |
-| 6 | **EST/PST Scheduling** | Dual US prime-time slots with file locks & dedup protection |
-| 7 | **Analytics Feedback** | Scrapes Dashboard, Shorts metrics, Earn progress into JSON history |
+    style A fill:#1a1a2e,stroke:#0ef,color:#fff
+    style G fill:#1a1a2e,stroke:#ff2d91,color:#fff
+    style J fill:#1a1a2e,stroke:#0ef,color:#fff
+```
 
 ## Architecture
 
 ```
 youtube-shorts-pro-skill/
-├── SKILL.md                          # AI agent skill definition (YAML frontmatter)
-├── README.md                         # This file
-├── requirements.txt                  # Python dependencies
-├── LICENSE                           # MIT License
+├── SKILL.md                              # AI agent skill definition
+├── README.md                             # This file
+├── CHANGELOG.md                          # Version history
+├── CONTRIBUTING.md                       # Contribution guide
+├── requirements.txt                      # Python dependencies
+├── pyproject.toml                        # Project & Ruff lint configuration
+├── LICENSE                               # MIT License
 ├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── lint.yml                      # CI: syntax + lint checks
 ├── examples/
-│   ├── config.example.json           # Channel configuration template
-│   └── catalog.example.json          # Upload queue template
+│   ├── README.md                         # Config field documentation
+│   ├── config.example.json               # Channel configuration template
+│   └── catalog.example.json              # Upload queue template
 ├── references/
-│   ├── 7-pillars-playbook.md         # Complete creator checklist
-│   ├── high-rpm-usa-monetization.md  # RPM/CPM strategy & YPP milestones
-│   ├── studio-cdp-selectors.md       # 9 Polymer DOM gotchas
-│   └── instagram-dual-reel-sync.md   # Optional IG Reels guide
+│   ├── 7-pillars-playbook.md             # Complete creator checklist
+│   ├── high-rpm-usa-monetization.md      # RPM/CPM strategy & YPP milestones
+│   ├── studio-cdp-selectors.md           # 9 Polymer DOM gotchas
+│   ├── instagram-dual-reel-sync.md       # Optional IG Reels guide
+│   └── troubleshooting.md               # Common issues & solutions
 └── scripts/
-    ├── config_loader.py              # Portable config & cross-platform file lock
-    ├── build_channel_branding.py     # Avatar, Banner & Watermark generator
-    ├── media_loudness_validator.py   # FFprobe + FFmpeg audio validator
-    ├── yt_channel_manager.py         # Studio channel ops (Home Tab, Watermark, COPPA, Comments, Analytics)
-    ├── yt_studio_shorts_uploader.py  # Full-metadata upload engine
+    ├── __init__.py                       # Package init with __all__
+    ├── constants.py                      # All magic numbers & DOM selectors
+    ├── exceptions.py                     # Custom exception hierarchy
+    ├── logger.py                         # Centralized logging setup
+    ├── config_loader.py                  # Portable config & file locks
+    ├── build_channel_branding.py         # Avatar, Banner & Watermark generator
+    ├── media_loudness_validator.py        # FFprobe + FFmpeg audio validator
+    ├── yt_channel_manager.py             # Studio channel ops via CDP
+    ├── yt_studio_shorts_uploader.py      # Full-metadata upload engine
     ├── youtube_shorts_daily_pipeline.py  # Master CLI orchestrator
-    ├── ig_reels_publisher.py         # Instagram Reels CDP publisher
-    ├── run_slot.bat                  # Windows batch launcher
-    └── setup_windows_scheduler.ps1   # Windows Task Scheduler setup
+    ├── ig_reels_publisher.py             # Instagram Reels CDP publisher
+    ├── run_slot.bat                      # Windows batch launcher
+    └── setup_windows_scheduler.ps1       # Windows Task Scheduler setup
 ```
+
+## The 7 Pillars
+
+| # | Pillar | What It Does |
+|---|--------|-------------|
+| 1 | **Eligibility & Legal** | Audits Feature Eligibility tiers, protects AdSense residency |
+| 2 | **Pro Storefront** | Generates 2560×1440 banner, 800×800 avatar, 150×150 watermark; enables Home Tab & COPPA |
+| 3 | **Media Quality Gate** | Validates 9:16, ≤60s, FFmpeg loudness (-38 to -3 dBFS), title ≤60 chars, `#Shorts` tag |
+| 4 | **Complete Metadata** | Playlist, Gaming category, official Game Title, US English, Tags, Altered Content |
+| 5 | **Community Loop** | Posts & pins owner CTA comments; replies to unresponded Studio inbox |
+| 6 | **EST/PST Scheduling** | Dual US prime-time slots with cross-platform file locks & same-day dedup |
+| 7 | **Analytics Feedback** | Scrapes Dashboard, Shorts metrics, Earn progress into timestamped JSON history |
 
 ## Prerequisites
 
-- **Python 3.10+**
-- **Google Chrome** running with remote debugging:
-  ```bash
-  chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\chrome-yt-profile"
-  ```
-- **FFmpeg & FFprobe** in `PATH` (for media validation)
-- A YouTube channel logged into Chrome with Studio access
+| Requirement | Purpose |
+|-------------|---------|
+| **Python 3.10+** | Runtime |
+| **Google Chrome** with `--remote-debugging-port=9222` | CDP automation target |
+| **FFmpeg + FFprobe** in PATH | Media validation |
+| **Playwright** (`pip install playwright && python -m playwright install chromium`) | Browser automation |
+| **Pillow** (`pip install Pillow`) | Branding asset generation |
 
 ## Quick Start
 
@@ -68,44 +98,45 @@ youtube-shorts-pro-skill/
 git clone https://github.com/ATP0925/youtube-shorts-pro-skill.git
 cd youtube-shorts-pro-skill
 
-# 2. Install dependencies
+# 2. Install
 pip install -r requirements.txt
 python -m playwright install chromium
 
-# 3. Configure your channel
+# 3. Configure
 cp examples/config.example.json config.json
-# Edit config.json with your channel_id, channel_name, etc.
+# Edit config.json — set channel_id, channel_name, channel_handle
 
 cp examples/catalog.example.json queue/catalog.json
-# Add your video entries to the catalog
+# Add your video entries
 
-# 4. Generate branding assets
+# 4. Launch Chrome with CDP
+chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\chrome-yt-profile"
+
+# 5. Generate branding
 python scripts/build_channel_branding.py --title "YOUR CHANNEL" --subtitle "4K CLIPS | DAILY SHORTS"
 
-# 5. Validate all queued Shorts
+# 6. Validate catalog
 python scripts/youtube_shorts_daily_pipeline.py --verify
 
-# 6. Apply Studio foundation (Home Tab, Watermark, COPPA)
+# 7. Set up Studio (Home Tab, Watermark, COPPA, backfill metadata)
 python scripts/youtube_shorts_daily_pipeline.py --optimize-live
 
-# 7. Upload a Short with full metadata
+# 8. Daily upload
 python scripts/youtube_shorts_daily_pipeline.py --slot morning --daily-ops
-
-# 8. Check channel status
-python scripts/youtube_shorts_daily_pipeline.py --status
 ```
 
 ## CLI Reference
 
 | Command | Description |
 |---------|-------------|
-| `--verify` | Validate all catalog entries (resolution, duration, loudness, metadata) |
-| `--audit` | Scrape Studio Analytics, Feature Eligibility, Earn progress & reply to comments |
-| `--optimize-live` | Enable Home Tab + Watermark + COPPA + backfill metadata on live Shorts |
+| `--verify` | Validate all catalog entries (resolution, duration, loudness, metadata completeness) |
+| `--audit` | Scrape Studio Analytics, Feature Eligibility, Earn progress; reply to inbox comments |
+| `--optimize-live` | Enable Home Tab + Watermark + COPPA + backfill metadata on published Shorts |
 | `--slot morning\|night\|auto` | Select and upload next queued Short for the given time slot |
 | `--daily-ops` | Run analytics + comments inbox before uploading |
-| `--scheduled` | Mark as triggered by Task Scheduler (enables window & dedup checks) |
+| `--scheduled` | Mark as triggered by Task Scheduler (enables time-window & dedup checks) |
 | `--dry-run` | Validate selection without uploading |
+| `--verbose` | Enable debug-level logging |
 | `--count N` | Upload N Shorts in one run (default: 1) |
 | `--status` | Print channel state and upload history summary |
 
@@ -115,28 +146,60 @@ python scripts/youtube_shorts_daily_pipeline.py --status
 # Register dual US prime-time tasks (default: 19:30 IST morning, 22:45 IST night)
 powershell -ExecutionPolicy Bypass -File scripts/setup_windows_scheduler.ps1
 
-# Custom times
+# Custom times and prefix
 powershell -File scripts/setup_windows_scheduler.ps1 -MorningTime "20:00" -NightTime "23:00" -TaskPrefix "MyChannel"
 ```
 
 ## Safety Guarantees
 
-- **Never bypasses auth gates:** Stops cleanly on Google 2FA, CAPTCHA, Instagram checkpoints
-- **Never spoofs AdSense country:** Legal residence must be real (use W-8BEN for tax treaty benefits)
-- **Single-instance protection:** Cross-platform file locks prevent concurrent pipeline runs
-- **Same-day dedup:** Scheduled runs skip if the slot already succeeded today
-- **Tab leak prevention:** All CDP pages wrapped in `try...finally: await pg.close()`
+| Safety Rule | Enforcement |
+|-------------|-------------|
+| **Never bypass auth gates** | Raises `AuthGateError` on Google 2FA, CAPTCHA, checkpoint |
+| **Never spoof AdSense country** | Legal residence must be real (use W-8BEN for tax treaty) |
+| **Single-instance protection** | Cross-platform `msvcrt`/`fcntl` file locks |
+| **Same-day dedup** | Scheduled runs skip if slot already succeeded today |
+| **Tab leak prevention** | All CDP pages in `try...finally: await pg.close()` |
+| **Instagram circuit breaker** | Raises `IGSafetyError` on suspension/block indicators |
+
+## Code Architecture
+
+The codebase follows these engineering principles:
+
+- **No magic numbers** — all thresholds, timeouts, and selectors live in `constants.py`
+- **Custom exceptions** — `exceptions.py` provides a clean hierarchy for error handling
+- **Structured logging** — `logger.py` replaces all `print()` with rotating file + console logs
+- **Type annotations** — every function has full type hints
+- **Portable config** — no hardcoded channel IDs or paths; everything in `config.json`
 
 ## Using as an AI Agent Skill
 
-Copy to your skills directory for Claude Code, Antigravity, or similar agents:
-
 ```bash
-# Antigravity / Claude Code
+# Copy to skills directory
 cp -r . ~/.gemini/config/skills/youtube-shorts-pro-skill/
+
+# Or on Windows
+xcopy /E /I . %USERPROFILE%\.gemini\config\skills\youtube-shorts-pro-skill\
 ```
 
-The agent will use this skill when it encounters triggers like: `youtube shorts`, `gaming channel`, `high rpm`, `cdp automation`, `youtube studio`, `adsense`, `instagram reels`.
+The agent triggers on: `youtube shorts`, `gaming channel`, `high rpm`, `cdp automation`, `youtube studio`, `adsense`, `instagram reels`, `shorts metadata`, `channel branding`, `upload pipeline`.
+
+## FAQ
+
+**Q: Do I need a US-based AdSense account for high RPM?**
+No. RPM is determined by *viewer geography*, not your AdSense country. Keep your legal country (India, etc.) and file Form W-8BEN for the DTAA tax treaty benefit (30% → 15% US withholding). See [references/high-rpm-usa-monetization.md](references/high-rpm-usa-monetization.md).
+
+**Q: Why Chrome CDP instead of the YouTube Data API?**
+The Data API doesn't support: Playlists assignment during upload, Gaming category + Game Title, Altered Content setting, or Studio-specific features (Home Tab, Watermark, COPPA defaults). CDP gives full Studio control.
+
+**Q: Can I use this for non-gaming channels?**
+Yes. Change `default_category` in `config.json` and adjust `default_game_title` as needed. The 7-pillar architecture applies to any niche.
+
+**Q: What happens if Chrome crashes during upload?**
+The pipeline uses file locks for single-instance protection and history tracking for dedup. Re-run the same command — it will skip already-uploaded entries and continue.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and PR guidelines.
 
 ## License
 

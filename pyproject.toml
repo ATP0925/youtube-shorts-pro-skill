@@ -1,0 +1,36 @@
+[project]
+name = "youtube-shorts-pro-skill"
+version = "2.0.0"
+description = "Portable YouTube Shorts & Gaming channel operating system via Chrome CDP"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "playwright>=1.40",
+    "Pillow>=10.0",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+src = ["scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+ignore = [
+    "E402",  # sys.path.insert precedes local sibling imports in standalone scripts
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "config_loader",
+    "constants",
+    "exceptions",
+    "logger",
+    "build_channel_branding",
+    "media_loudness_validator",
+    "yt_channel_manager",
+    "yt_studio_shorts_uploader",
+    "youtube_shorts_daily_pipeline",
+    "ig_reels_publisher",
+]
