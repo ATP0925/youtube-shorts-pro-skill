@@ -22,7 +22,7 @@ from typing import Any, TypeVar
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config_loader import is_cdp_available, load_config, load_json, save_json
+from config_loader import is_cdp_available, load_config, load_json, resolve_cdp_url, save_json
 from constants import (
     AUTH_GATE_BODY_PATTERNS,
     AUTH_GATE_URL_PATTERN,
@@ -555,7 +555,7 @@ async def configure_pro_studio_foundation(cdp_url: str | None = None) -> dict[st
         AuthGateError: If Google auth verification blocks Studio.
     """
     cfg = load_config()
-    cdp = cdp_url or cfg["cdp_url"]
+    cdp = resolve_cdp_url(cdp_url or cfg["cdp_url"])
     cid = load_channel_state().get("channel_id")
     if not cid:
         raise CDPConnectionError(cdp, "channel_id not set in config.json or state")
@@ -687,7 +687,7 @@ async def backfill_live_shorts(
         AuthGateError: If Google auth verification blocks Studio.
     """
     cfg = load_config()
-    cdp = cdp_url or cfg["cdp_url"]
+    cdp = resolve_cdp_url(cdp_url or cfg["cdp_url"])
     if not is_cdp_available(cdp):
         raise CDPConnectionError(cdp, "Chrome remote debugging endpoint unreachable")
 
@@ -750,7 +750,7 @@ async def audit_and_collect_analytics(
         AuthGateError: If Google auth verification blocks Studio.
     """
     cfg = load_config()
-    cdp = cdp_url or cfg["cdp_url"]
+    cdp = resolve_cdp_url(cdp_url or cfg["cdp_url"])
     cid = channel_id_override or load_channel_state().get("channel_id")
     if not cid:
         raise CDPConnectionError(cdp, "channel_id not set in config.json or state")

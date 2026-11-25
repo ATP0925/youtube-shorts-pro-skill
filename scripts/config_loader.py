@@ -30,6 +30,7 @@ __all__ = [
     "load_config",
     "validate_config",
     "is_cdp_available",
+    "resolve_cdp_url",
     "load_json",
     "save_json",
     "acquire_process_lock",
@@ -88,6 +89,7 @@ def load_config() -> dict[str, Any]:
     """Load and merge user config over defaults.
 
     ``None`` values in the user file are skipped so defaults are preserved.
+    Relative ``*_path`` values are resolved relative to :data:`BASE_DIR`.
     """
     cfg: dict[str, Any] = dict(DEFAULT_CONFIG)
     if CONFIG_FILE.exists():
@@ -99,6 +101,11 @@ def load_config() -> dict[str, Any]:
             logging.getLogger("yt_pro.config").warning(
                 "Could not parse %s: %s", CONFIG_FILE, exc,
             )
+    for key, val in list(cfg.items()):
+        if key.endswith("_path") and isinstance(val, str) and val:
+            p = Path(val).expanduser()
+            if not p.is_absolute():
+                cfg[key] = str(BASE_DIR / p)
     return cfg
 
 
@@ -141,15 +148,36 @@ def validate_config(cfg: dict[str, Any] | None = None, require_channel_id: bool 
 
 # ── CDP Reachability ───────────────────────────────────────────────────
 
-def is_cdp_available(host: str | None = None, timeout: float = CDP_HTTP_TIMEOUT_S) -> bool:
-    """Return ``True`` if the Chrome DevTools Protocol HTTP endpoint responds."""
-    cdp = (host or load_config()["cdp_url"]).rstrip("/")
+def _probe_cdp_endpoint(cdp_url: str, timeout: float) -> bool:
+    """Return ``True`` if a specific CDP base URL responds on ``/json/version``."""
     try:
-        req = urllib.request.Request(f"{cdp}{CDP_VERSION_ENDPOINT}")
+        req = urllib.request.Request(f"{cdp_url.rstrip('/')}{CDP_VERSION_ENDPOINT}")
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.status == 200
     except Exception:
         return False
+
+
+def resolve_cdp_url(host: str | None = None, timeout: float = CDP_HTTP_TIMEOUT_S) -> str:
+    """Return a reachable CDP base URL, falling back from ``localhost`` to ``127.0.0.1``.
+
+    On Windows, IPv4-only Chromium/Brave listeners on ``127.0.0.1:9222`` can fail
+    short-timeout probes against ``localhost`` due to IPv6 ``::1`` resolution.
+    """
+    cdp = (host or load_config()["cdp_url"]).rstrip("/")
+    if _probe_cdp_endpoint(cdp, timeout=timeout):
+        return cdp
+    if "://localhost:" in cdp or cdp.endswith("://localhost"):
+        ipv4 = cdp.replace("://localhost", "://127.0.0.1", 1)
+        if _probe_cdp_endpoint(ipv4, timeout=timeout):
+            return ipv4
+    return cdp
+
+
+def is_cdp_available(host: str | None = None, timeout: float = CDP_HTTP_TIMEOUT_S) -> bool:
+    """Return ``True`` if the Chrome DevTools Protocol HTTP endpoint responds."""
+    resolved = resolve_cdp_url(host=host, timeout=timeout)
+    return _probe_cdp_endpoint(resolved, timeout=timeout)
 
 
 # ── JSON helpers ────────────────────────────────────────────────────────

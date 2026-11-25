@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$MorningTime = "19:30",
     [string]$NightTime = "22:45",
     [string]$TaskPrefix = "YTProShorts",

@@ -18,7 +18,7 @@ from typing import Any
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config_loader import is_cdp_available, load_config
+from config_loader import is_cdp_available, load_config, resolve_cdp_url
 from constants import (
     CDP_CONNECT_TIMEOUT_MS,
     DROPDOWN_SETTLE_MS,
@@ -168,7 +168,7 @@ async def publish_reel(
         IGSafetyError: If suspension/block indicators are detected.
     """
     cfg = load_config()
-    cdp = cdp_url or cfg["cdp_url"]
+    cdp = resolve_cdp_url(cdp_url or cfg["cdp_url"])
     target_url = profile_url or cfg.get("ig_profile_url", "https://www.instagram.com/")
 
     if not os.path.exists(video_path):

@@ -17,7 +17,7 @@ from typing import Any
 from playwright.async_api import async_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config_loader import is_cdp_available, load_config
+from config_loader import is_cdp_available, load_config, resolve_cdp_url
 from constants import (
     CDP_CONNECT_TIMEOUT_MS,
     CREATE_BUTTON_TIMEOUT_MS,
@@ -60,7 +60,7 @@ async def check_youtube_session_health(cdp_url: str | None = None) -> dict[str, 
         Health report dict with healthy, cdp_available, requires_manual_auth, etc.
     """
     cfg = load_config()
-    cdp = cdp_url or cfg["cdp_url"]
+    cdp = resolve_cdp_url(cdp_url or cfg["cdp_url"])
     health: dict[str, Any] = {
         "healthy": False,
         "cdp_available": False,
@@ -309,7 +309,7 @@ async def upload_youtube_short(
         AuthGateError: If Google requires manual verification in Chrome.
     """
     cfg = load_config()
-    cdp = cfg["cdp_url"]
+    cdp = resolve_cdp_url(cfg["cdp_url"])
 
     if not os.path.exists(video_path):
         return {"success": False, "video_url": None, "video_id": None, "message": f"Video file missing: {video_path}"}
