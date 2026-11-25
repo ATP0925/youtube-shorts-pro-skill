@@ -1,0 +1,42 @@
+# Runtime config (contains channel secrets)
+config.json
+
+# State & history files
+youtube_shorts_history.json
+youtube_channel_state.json
+youtube_channel_audit.json
+youtube_analytics_history.json
+youtube_comments_log.json
+
+# Queue (user-specific catalog)
+queue/
+
+# Generated assets (keep examples only)
+assets/
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Process lock
+*.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store

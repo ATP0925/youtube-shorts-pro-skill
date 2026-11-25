@@ -1,0 +1,196 @@
+"""
+Parameterized Pro YouTube Channel Branding Asset Generator
+----------------------------------------------------------
+Generates crisp:
+  1. 800x800 circular-safe Neon Gaming Emblem Avatar
+  2. 2560x1440 Banner strictly aligned inside the 1546x423 safe zone
+  3. 150x150 high-contrast Subscribe Video Watermark
+"""
+
+import argparse
+import math
+from pathlib import Path
+from PIL import Image, ImageDraw, ImageFont
+
+
+def _load_font(size: int, bold: bool = True):
+    candidates = (
+        [
+            r"C:\Windows\Fonts\seguibl.ttf" if bold else r"C:\Windows\Fonts\seguisb.ttf",
+            r"C:\Windows\Fonts\arialbd.ttf" if bold else r"C:\Windows\Fonts\arial.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+        ]
+    )
+    for path in candidates:
+        if Path(path).exists():
+            try:
+                return ImageFont.truetype(path, size)
+            except Exception:
+                pass
+    return ImageFont.load_default()
+
+
+def build_pro_avatar(out_path: Path, badge: str = "VI", label: str = "CREATOR", pill: str = "4K SHORTS"):
+    size = 800
+    img = Image.new("RGBA", (size, size), (12, 7, 28, 255))
+    draw = ImageDraw.Draw(img)
+
+    for y in range(size):
+        t = y / size
+        r = int(16 + 40 * math.sin(t * math.pi))
+        g = int(8 + 12 * (1 - t))
+        b = int(42 + 35 * (1 - t))
+        draw.line([(0, y), (size, y)], fill=(r, g, b, 255))
+
+    draw.ellipse([24, 24, 776, 776], outline=(0, 235, 255, 255), width=16)
+    draw.ellipse([46, 46, 754, 754], outline=(255, 45, 145, 255), width=10)
+    draw.ellipse([66, 66, 734, 734], fill=(12, 8, 28, 230), outline=(255, 215, 0, 200), width=3)
+
+    f_badge = _load_font(270 if len(badge) <= 3 else 180, bold=True)
+    f_sub = _load_font(50, bold=True)
+    f_pill = _load_font(34, bold=False)
+
+    draw.text((388, 305), badge, font=f_badge, fill=(0, 240, 255), anchor="mm")
+    draw.text((412, 315), badge, font=f_badge, fill=(255, 40, 140), anchor="mm")
+    draw.text((400, 310), badge, font=f_badge, fill=(255, 255, 255), anchor="mm")
+
+    draw.text((400, 520), label[:16], font=f_sub, fill=(255, 215, 0), anchor="mm")
+    draw.rounded_rectangle([225, 575, 575, 635], radius=28, fill=(255, 35, 130, 245), outline=(0, 240, 255, 255), width=3)
+    draw.text((400, 604), pill[:16], font=f_pill, fill=(255, 255, 255), anchor="mm")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    img.convert("RGB").save(out_path, "PNG")
+    print(f"Saved Avatar (800x800): {out_path}")
+
+
+def _draw_palm(draw: ImageDraw.ImageDraw, bx: int, by: int, scale: float, flip: int = 1):
+    pts = []
+    for i in range(14):
+        t = i / 13.0
+        px = bx + flip * int(60 * scale * (t ** 1.6))
+        py = by - int(360 * scale * t)
+        pts.append((px, py))
+    for i in range(len(pts) - 1):
+        w = max(4, int((16 - i) * scale))
+        draw.line([pts[i], pts[i + 1]], fill=(10, 5, 24, 255), width=w)
+    top_x, top_y = pts[-1]
+    for ang_deg in [-155, -125, -90, -45, -15, 20, 160]:
+        rad = math.radians(ang_deg)
+        length = 140 * scale
+        ex = top_x + int(math.cos(rad) * length)
+        ey = top_y + int(math.sin(rad) * length * 0.75 + 25 * scale)
+        cx = (top_x + ex) // 2
+        cy = min(top_y, ey) - int(28 * scale)
+        draw.polygon([(top_x, top_y), (cx, cy), (ex, ey), (cx, cy + int(22 * scale))], fill=(10, 5, 24, 255))
+
+
+def build_pro_banner(
+    out_path: Path,
+    title: str = "YOUR CHANNEL VAULT",
+    subtitle: str = "4K CLIPS  |  VIRAL MOMENTS  |  DAILY SHORTS",
+    schedule_pill: str = "NEW SHORTS DAILY  |  9 AM & 5 PM EST",
+):
+    W, H = 2560, 1440
+    canvas = Image.new("RGBA", (W, H), (10, 6, 26, 255))
+    draw = ImageDraw.Draw(canvas)
+
+    for y in range(H):
+        t = y / H
+        if t < 0.58:
+            st = t / 0.58
+            r, g, b = int(16 + 150 * (st ** 1.4)), int(10 + 35 * (st ** 1.8)), int(48 + 90 * st - 30 * (st ** 2))
+        else:
+            ot = (t - 0.58) / 0.42
+            r, g, b = int(28 - 18 * ot), int(16 + 45 * (1 - ot)), int(75 + 45 * (1 - ot))
+        draw.line([(0, y), (W, y)], fill=(r, g, b, 255))
+
+    sun_cx, sun_cy, sun_r = 1280, 740, 340
+    sun_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(sun_layer)
+    for y in range(sun_cy - sun_r, sun_cy + sun_r):
+        dy = y - sun_cy
+        if abs(dy) < sun_r:
+            half_w = int(math.sqrt(sun_r * sun_r - dy * dy))
+            if dy > 35 and ((dy // 26) % 2 == 1):
+                continue
+            gt = (y - (sun_cy - sun_r)) / (2 * sun_r)
+            col = (255, int(210 - 155 * gt), int(60 + 80 * gt), 220)
+            sd.line([(sun_cx - half_w, y), (sun_cx + half_w, y)], fill=col)
+    canvas = Image.alpha_composite(canvas, sun_layer)
+    draw = ImageDraw.Draw(canvas)
+
+    horizon_y = 845
+    draw.line([(0, horizon_y), (W, horizon_y)], fill=(0, 245, 255, 255), width=6)
+    for k in range(-14, 15):
+        draw.line([(1280 + k * 70, horizon_y), (1280 + k * 280, H)], fill=(0, 220, 255, 110), width=3)
+    for i in range(1, 9):
+        gy = horizon_y + int(((i / 8) ** 1.7) * (H - horizon_y))
+        draw.line([(0, gy), (W, gy)], fill=(255, 45, 155, 100), width=3)
+
+    for bx, sc, fl in [(390, 1.45, 1), (540, 1.05, 1), (2170, 1.45, -1), (2020, 1.05, -1)]:
+        _draw_palm(draw, bx, 960 if sc > 1.2 else 935, sc, flip=fl)
+
+    # 1546x423 center safe-zone glass showcase card
+    card = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    cd = ImageDraw.Draw(card)
+    cd.rounded_rectangle([590, 540, 1970, 900], radius=38, fill=(10, 6, 26, 228), outline=(255, 45, 145, 255), width=6)
+    cd.rounded_rectangle([600, 550, 1960, 890], radius=31, outline=(0, 240, 255, 235), width=3)
+    canvas = Image.alpha_composite(canvas, card)
+    draw = ImageDraw.Draw(canvas)
+
+    f_title = _load_font(116 if len(title) <= 18 else 92, bold=True)
+    f_sub = _load_font(38, bold=False)
+    f_pill = _load_font(31, bold=True)
+
+    draw.text((1274, 645), title, font=f_title, fill=(0, 240, 255), anchor="mm")
+    draw.text((1286, 653), title, font=f_title, fill=(255, 40, 140), anchor="mm")
+    draw.text((1280, 649), title, font=f_title, fill=(255, 255, 255), anchor="mm")
+    draw.text((1280, 750), subtitle, font=f_sub, fill=(255, 215, 0), anchor="mm")
+    draw.rounded_rectangle([860, 802, 1700, 862], radius=26, fill=(255, 35, 135, 245), outline=(0, 240, 255, 255), width=3)
+    draw.text((1280, 831), schedule_pill, font=f_pill, fill=(255, 255, 255), anchor="mm")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.convert("RGB").save(out_path, "PNG")
+    print(f"Saved Banner (2560x1440): {out_path}")
+
+
+def build_pro_watermark(out_path: Path, badge: str = "VI"):
+    size = 150
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    draw.rounded_rectangle([6, 6, 144, 144], radius=28, fill=(14, 10, 32, 235), outline=(0, 240, 255, 255), width=4)
+    draw.rounded_rectangle([12, 12, 138, 138], radius=22, outline=(255, 45, 145, 220), width=2)
+
+    f_badge = _load_font(56 if len(badge) <= 2 else 42, bold=True)
+    f_sub = _load_font(17, bold=True)
+
+    draw.text((73, 52), badge, font=f_badge, fill=(0, 240, 255), anchor="mm")
+    draw.text((77, 55), badge, font=f_badge, fill=(255, 40, 140), anchor="mm")
+    draw.text((75, 53), badge, font=f_badge, fill=(255, 255, 255), anchor="mm")
+    draw.rounded_rectangle([14, 95, 136, 129], radius=12, fill=(255, 24, 58, 255), outline=(255, 255, 255, 230), width=2)
+    draw.text((75, 112), "SUBSCRIBE", font=f_sub, fill=(255, 255, 255), anchor="mm")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(out_path, "PNG")
+    print(f"Saved Watermark (150x150): {out_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate Pro YouTube Channel Branding Assets")
+    parser.add_argument("--badge", default="VI", help="Center monogram inside avatar & watermark")
+    parser.add_argument("--title", default="YOUR CHANNEL", help="Channel title for banner")
+    parser.add_argument("--subtitle", default="4K CLIPS  |  VIRAL MOMENTS  |  DAILY SHORTS")
+    parser.add_argument("--pill", default="NEW SHORTS DAILY  |  9 AM & 5 PM EST")
+    parser.add_argument("--out-dir", default="assets")
+    args = parser.parse_args()
+
+    out = Path(args.out_dir)
+    build_pro_avatar(out / "avatar_800.png", badge=args.badge, label=args.title.upper(), pill="4K VAULT")
+    build_pro_banner(out / "banner_2560x1440.png", title=args.title.upper(), subtitle=args.subtitle, schedule_pill=args.pill)
+    build_pro_watermark(out / "watermark_150.png", badge=args.badge)
+
+
+if __name__ == "__main__":
+    main()

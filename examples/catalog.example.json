@@ -1,0 +1,30 @@
+[
+  {
+    "id": "example_sunrise_highway",
+    "slot": "morning",
+    "video_path": "C:/path/to/your/video_sunrise_highway.mp4",
+    "youtube_shorts": {
+      "title": "GTA 6 Sunrise Over Vice City Highway #Shorts",
+      "description": "Watch the sun break over Vice City's coastal highway in stunning 4K detail.\n\n🎮 Grand Theft Auto VI\n📺 Subscribe for daily GTA 6 clips!\n\n#GTA6 #ViceCity #Gaming #4K #Shorts",
+      "tags": ["GTA6", "Vice City", "4K", "gameplay", "sunrise", "highway", "open world", "gaming"],
+      "playlist_name": "GTA 6 4K Gameplay & Physics",
+      "game_title": "Grand Theft Auto VI",
+      "altered_content": false,
+      "pinned_comment": "Which Vice City road do you want to cruise next? Drop it below! 🚗💨"
+    }
+  },
+  {
+    "id": "example_streamer_reaction",
+    "slot": "night",
+    "video_path": "C:/path/to/your/video_streamer_reaction.mp4",
+    "youtube_shorts": {
+      "title": "Streamer Can't Believe This GTA 6 Detail #Shorts",
+      "description": "Top streamer reacts to an insane physics detail in GTA 6.\n\n🎮 Grand Theft Auto VI\n📺 Subscribe for viral gaming moments!\n\n#GTA6 #StreamerReaction #Gaming #Viral #Shorts",
+      "tags": ["GTA6", "streamer", "reaction", "viral", "gaming", "physics", "detail", "clips"],
+      "playlist_name": "GTA 6 Viral Clips & Streamer Reactions",
+      "game_title": "Grand Theft Auto VI",
+      "altered_content": false,
+      "pinned_comment": "Which streamer's reaction was the best? Let us know! 🎙️🔥"
+    }
+  }
+]

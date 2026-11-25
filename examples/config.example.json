@@ -1,0 +1,24 @@
+{
+  "channel_id": "UCxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "channel_name": "Your Gaming Channel",
+  "channel_handle": "@YourHandle",
+  "cdp_url": "http://localhost:9222",
+  "target_audience": "USA / Tier-1 English",
+  "video_language": "English (United States)",
+  "default_category": "Gaming",
+  "default_game_title": "Grand Theft Auto VI",
+  "playlists": [
+    "GTA 6 4K Gameplay & Physics",
+    "GTA 6 Viral Clips & Streamer Reactions"
+  ],
+  "morning_window_hours": [18, 21],
+  "night_window_start_hour": 21,
+  "ig_profile_url": "https://www.instagram.com/your_ig_handle/",
+  "catalog_path": "queue/catalog.json",
+  "history_path": "youtube_shorts_history.json",
+  "channel_state_path": "youtube_channel_state.json",
+  "audit_path": "youtube_channel_audit.json",
+  "analytics_history_path": "youtube_analytics_history.json",
+  "comments_log_path": "youtube_comments_log.json",
+  "watermark_path": "assets/watermark_150.png"
+}
