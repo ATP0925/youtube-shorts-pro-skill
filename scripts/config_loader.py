@@ -17,9 +17,10 @@ import json
 import os
 import sys
 import urllib.request
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from constants import CDP_DEFAULT_URL, CDP_HTTP_TIMEOUT_S, CDP_VERSION_ENDPOINT

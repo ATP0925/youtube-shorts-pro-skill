@@ -47,7 +47,10 @@ __all__ = ["run_yt_slot", "main"]
 def _select_next_short(slot: str, history: dict[str, Any], catalog: list[dict]) -> dict | None:
     """Pick the next unuploaded Short for the given slot."""
     uploaded = {u["id"] for u in history.get("uploads", []) if u.get("status") == "SUCCESS"}
-    preferred = [e for e in catalog if e.get("slot") == slot and e["id"] not in uploaded and os.path.exists(e.get("video_path", ""))]
+    preferred = [
+        e for e in catalog
+        if e.get("slot") == slot and e["id"] not in uploaded and os.path.exists(e.get("video_path", ""))
+    ]
     if preferred:
         return preferred[0]
     fallback = [e for e in catalog if e["id"] not in uploaded and os.path.exists(e.get("video_path", ""))]
@@ -236,9 +239,18 @@ def main() -> None:
             if slot == "auto":
                 now_t = datetime.datetime.now()
                 night_h = cfg.get("night_window_start_hour", DEFAULT_NIGHT_START_HOUR)
-                slot = "morning" if (now_t.hour < night_h or (now_t.hour == night_h and now_t.minute < NIGHT_WINDOW_MINUTE_THRESHOLD)) else "night"
+                is_morning = now_t.hour < night_h or (
+                    now_t.hour == night_h and now_t.minute < NIGHT_WINDOW_MINUTE_THRESHOLD
+                )
+                slot = "morning" if is_morning else "night"
 
-            ok = run_yt_slot(slot, dry_run=args.dry_run, count=args.count, scheduled=args.scheduled, daily_ops=args.daily_ops)
+            ok = run_yt_slot(
+                slot,
+                dry_run=args.dry_run,
+                count=args.count,
+                scheduled=args.scheduled,
+                daily_ops=args.daily_ops,
+            )
             sys.exit(0 if ok else 1)
 
     except YTProError as exc:

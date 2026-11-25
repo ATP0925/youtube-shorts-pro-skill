@@ -104,7 +104,9 @@ def build_pro_avatar(
 
     # Label and pill
     draw.text((400, 520), label[:16], font=f_sub, fill=(255, 215, 0), anchor="mm")
-    draw.rounded_rectangle([225, 575, 575, 635], radius=28, fill=(255, 35, 130, 245), outline=(0, 240, 255, 255), width=3)
+    draw.rounded_rectangle(
+        [225, 575, 575, 635], radius=28, fill=(255, 35, 130, 245), outline=(0, 240, 255, 255), width=3,
+    )
     draw.text((400, 604), pill[:16], font=f_pill, fill=(255, 255, 255), anchor="mm")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -217,7 +219,9 @@ def build_pro_banner(
     draw.text((1280, 750), subtitle, font=f_sub, fill=(255, 215, 0), anchor="mm")
 
     # Schedule pill
-    draw.rounded_rectangle([860, 802, 1700, 862], radius=26, fill=(255, 35, 135, 245), outline=(0, 240, 255, 255), width=3)
+    draw.rounded_rectangle(
+        [860, 802, 1700, 862], radius=26, fill=(255, 35, 135, 245), outline=(0, 240, 255, 255), width=3,
+    )
     draw.text((1280, 831), schedule_pill, font=f_pill, fill=(255, 255, 255), anchor="mm")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -249,7 +253,9 @@ def build_pro_watermark(out_path: Path, badge: str = "VI") -> None:
     draw.text((73, 52), badge, font=f_badge, fill=(0, 240, 255), anchor="mm")
     draw.text((77, 55), badge, font=f_badge, fill=(255, 40, 140), anchor="mm")
     draw.text((75, 53), badge, font=f_badge, fill=(255, 255, 255), anchor="mm")
-    draw.rounded_rectangle([14, 95, 136, 129], radius=12, fill=(255, 24, 58, 255), outline=(255, 255, 255, 230), width=2)
+    draw.rounded_rectangle(
+        [14, 95, 136, 129], radius=12, fill=(255, 24, 58, 255), outline=(255, 255, 255, 230), width=2,
+    )
     draw.text((75, 112), "SUBSCRIBE", font=f_sub, fill=(255, 255, 255), anchor="mm")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -278,8 +284,18 @@ def main() -> None:
         sys.exit(1)
 
     out = Path(args.out_dir)
-    build_pro_avatar(out / "avatar_800.png", badge=args.badge, label=args.label.upper(), pill=args.avatar_pill.upper())
-    build_pro_banner(out / "banner_2560x1440.png", title=args.title.upper(), subtitle=args.subtitle, schedule_pill=args.pill)
+    build_pro_avatar(
+        out / "avatar_800.png",
+        badge=args.badge,
+        label=args.label.upper(),
+        pill=args.avatar_pill.upper(),
+    )
+    build_pro_banner(
+        out / "banner_2560x1440.png",
+        title=args.title.upper(),
+        subtitle=args.subtitle,
+        schedule_pill=args.pill,
+    )
     build_pro_watermark(out / "watermark_150.png", badge=args.badge)
     log.info("All 3 branding assets generated in %s/", out)
 

@@ -153,7 +153,8 @@ def check_audio_loudness(video_path: str) -> dict[str, Any]:
     except FileNotFoundError:
         return {"ok": False, "mean_db": None, "max_db": None, "error": "ffmpeg not found in PATH"}
     except subprocess.TimeoutExpired:
-        return {"ok": False, "mean_db": None, "max_db": None, "error": f"ffmpeg timed out after {FFMPEG_VOLUMEDETECT_TIMEOUT_S}s"}
+        msg = f"ffmpeg timed out after {FFMPEG_VOLUMEDETECT_TIMEOUT_S}s"
+        return {"ok": False, "mean_db": None, "max_db": None, "error": msg}
     except Exception as exc:
         return {"ok": False, "mean_db": None, "max_db": None, "error": str(exc)}
 

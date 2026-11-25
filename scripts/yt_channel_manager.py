@@ -15,8 +15,9 @@ import asyncio
 import datetime
 import re
 import sys
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Any, Awaitable, Callable, TypeVar
+from typing import Any, TypeVar
 
 from playwright.async_api import async_playwright
 
@@ -48,6 +49,8 @@ from constants import (
     STEP_NEXT_SETTLE_MS,
     STUDIO_SETTLE_MS,
     WATERMARK_ATTACH_SETTLE_MS,
+)
+from constants import (
     StudioSelectors as S,
 )
 from exceptions import AuthGateError, CDPConnectionError
@@ -377,7 +380,13 @@ async def apply_full_video_metadata(
     cat = cfg.get("default_category", "Gaming")
     lang = cfg.get("video_language", "English (United States)")
 
-    changes: dict[str, bool] = {"playlist": False, "cat_lang": False, "altered": False, "tags": False, "game_title": False}
+    changes: dict[str, bool] = {
+        "playlist": False,
+        "cat_lang": False,
+        "altered": False,
+        "tags": False,
+        "game_title": False,
+    }
     if playlist_name:
         changes["playlist"] = await _set_playlist_in_form(pg, playlist_name)
     await _expand_show_more(pg, scope_selector=scope_selector)
@@ -468,7 +477,11 @@ async def post_and_pin_comment(pg: Any, video_id: str, comment_text: str) -> dic
             await watch_pg.wait_for_timeout(SCROLL_SETTLE_MS)
 
         if await ph.count() == 0:
-            await watch_pg.goto(f"https://www.youtube.com/shorts/{video_id}", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+            await watch_pg.goto(
+                f"https://www.youtube.com/shorts/{video_id}",
+                wait_until="domcontentloaded",
+                timeout=PAGE_LOAD_TIMEOUT_MS,
+            )
             await watch_pg.wait_for_timeout(IDENTITY_SWITCH_SETTLE_MS)
             c_btn = watch_pg.locator(S.SHORTS_COMMENT_BUTTON).first
             if await c_btn.count() > 0:
@@ -581,21 +594,35 @@ async def configure_pro_studio_foundation(cdp_url: str | None = None) -> dict[st
 
             # Watermark
             if wm_path.exists():
-                await pg.goto(f"https://studio.youtube.com/channel/{cid}/editing/profile", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+                await pg.goto(
+                    f"https://studio.youtube.com/channel/{cid}/editing/profile",
+                    wait_until="domcontentloaded",
+                    timeout=PAGE_LOAD_TIMEOUT_MS,
+                )
                 try:
                     await pg.wait_for_selector(S.FILE_INPUT, state="attached", timeout=FILE_INPUT_ATTACH_TIMEOUT_MS)
                 except Exception:
                     pass
                 await pg.wait_for_timeout(LONG_SETTLE_MS)
 
-                sec_info = await pg.evaluate("""() => Array.from(document.querySelectorAll("input[type='file']")).map((f, idx) => {
+                sec_info = await pg.evaluate(
+                    """() => Array.from(document.querySelectorAll("input[type='file']")).map((f, idx) => {
                     let el = f; let t = '';
-                    for (let k=0; k<6 && el; k++) { t = (el.innerText||''); if (t.length > 20) break; el = el.parentElement; }
+                    for (let k=0; k<6 && el; k++) {
+                        t = (el.innerText||'');
+                        if (t.length > 20) break;
+                        el = el.parentElement;
+                    }
                     return { idx, txt: t.toLowerCase() };
-                })""")
+                })"""
+                )
                 wm_idx = next((x["idx"] for x in sec_info if "150" in x["txt"] or "watermark" in x["txt"]), None)
                 if wm_idx is not None:
-                    already_wm = any("change" in x["txt"] and "remove" in x["txt"] for x in sec_info if x["idx"] == wm_idx)
+                    already_wm = any(
+                        "change" in x["txt"] and "remove" in x["txt"]
+                        for x in sec_info
+                        if x["idx"] == wm_idx
+                    )
                     if not already_wm:
                         await pg.locator(S.FILE_INPUT).nth(wm_idx).set_input_files(str(wm_path))
                         await pg.wait_for_timeout(WATERMARK_ATTACH_SETTLE_MS)
@@ -613,7 +640,11 @@ async def configure_pro_studio_foundation(cdp_url: str | None = None) -> dict[st
                     summary["watermark_uploaded"] = True
 
             # COPPA
-            await pg.goto(f"https://studio.youtube.com/channel/{cid}/editing/profile", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+            await pg.goto(
+                f"https://studio.youtube.com/channel/{cid}/editing/profile",
+                wait_until="domcontentloaded",
+                timeout=PAGE_LOAD_TIMEOUT_MS,
+            )
             await pg.wait_for_timeout(COMMENT_POST_SETTLE_MS)
             await _open_studio_settings_channel(pg)
             dlg = pg.locator(S.SETTINGS_DIALOG).last
@@ -676,7 +707,11 @@ async def backfill_live_shorts(
                 if not vid or cid_item not in by_id:
                     continue
                 yt = by_id[cid_item]["youtube_shorts"]
-                await pg.goto(f"https://studio.youtube.com/video/{vid}/edit", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+                await pg.goto(
+                    f"https://studio.youtube.com/video/{vid}/edit",
+                    wait_until="domcontentloaded",
+                    timeout=PAGE_LOAD_TIMEOUT_MS,
+                )
                 await _assert_not_auth_gate(pg)
                 await pg.wait_for_selector(S.PLAYLIST_METADATA, timeout=CDP_CONNECT_TIMEOUT_MS)
                 await pg.wait_for_timeout(STEP_NEXT_SETTLE_MS)
@@ -740,7 +775,11 @@ async def audit_and_collect_analytics(
         pg = await b.contexts[0].new_page()
         try:
             await _retry_async(
-                lambda: pg.goto(f"https://studio.youtube.com/channel/{cid}", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS),
+                lambda: pg.goto(
+                    f"https://studio.youtube.com/channel/{cid}",
+                    wait_until="domcontentloaded",
+                    timeout=PAGE_LOAD_TIMEOUT_MS,
+                ),
                 label="Studio dashboard",
             )
             await pg.wait_for_timeout(STUDIO_SETTLE_MS)
@@ -755,7 +794,11 @@ async def audit_and_collect_analytics(
             }
 
             # Shorts content
-            await pg.goto(f"https://studio.youtube.com/channel/{cid}/videos/short", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+            await pg.goto(
+                f"https://studio.youtube.com/channel/{cid}/videos/short",
+                wait_until="domcontentloaded",
+                timeout=PAGE_LOAD_TIMEOUT_MS,
+            )
             try:
                 await pg.wait_for_selector(S.VIDEO_ROW, timeout=15000)
                 await pg.wait_for_timeout(SCROLL_SETTLE_MS)
@@ -768,7 +811,11 @@ async def audit_and_collect_analytics(
                     report["shorts_metrics"].append({"row": i + 1, "title": raw[0], "cells": raw[1:8]})
 
             # Earn tab
-            await pg.goto(f"https://studio.youtube.com/channel/{cid}/monetization", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+            await pg.goto(
+                f"https://studio.youtube.com/channel/{cid}/monetization",
+                wait_until="domcontentloaded",
+                timeout=PAGE_LOAD_TIMEOUT_MS,
+            )
             await pg.wait_for_timeout(IDENTITY_SWITCH_SETTLE_MS)
             earn_txt = await pg.locator("body").inner_text()
             for k, pat in [
@@ -780,7 +827,11 @@ async def audit_and_collect_analytics(
                 report["earn_progress"][k] = m.group(1) if m else "0"
 
             # Home Tab check
-            await pg.goto(f"https://studio.youtube.com/channel/{cid}/editing/hometab", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+            await pg.goto(
+                f"https://studio.youtube.com/channel/{cid}/editing/hometab",
+                wait_until="domcontentloaded",
+                timeout=PAGE_LOAD_TIMEOUT_MS,
+            )
             await pg.wait_for_timeout(COMMENT_POST_SETTLE_MS)
             ht = pg.locator(S.HOME_TAB_TOGGLE).first
             if await ht.count() > 0:
@@ -794,14 +845,23 @@ async def audit_and_collect_analytics(
                 await ftab.click()
                 await pg.wait_for_timeout(LONG_SETTLE_MS)
                 ftxt = await dlg.inner_text()
-                for lvl, label in [("1_standard", "Standard features"), ("2_intermediate", "Intermediate features"), ("3_advanced", "Advanced features")]:
+                tiers = [
+                    ("1_standard", "Standard features"),
+                    ("2_intermediate", "Intermediate features"),
+                    ("3_advanced", "Advanced features"),
+                ]
+                for lvl, label in tiers:
                     m = re.search(rf"{label}[\s\S]{{0,140}}?(Enabled|Eligible|Not eligible)", ftxt)
                     report["feature_eligibility"][lvl] = m.group(1) if m else "Unknown"
             await pg.keyboard.press("Escape")
 
             # Comments inbox
             if reply_comments:
-                await pg.goto(f"https://studio.youtube.com/channel/{cid}/comments/inbox", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+                await pg.goto(
+                    f"https://studio.youtube.com/channel/{cid}/comments/inbox",
+                    wait_until="domcontentloaded",
+                    timeout=PAGE_LOAD_TIMEOUT_MS,
+                )
                 await pg.wait_for_timeout(IDENTITY_SWITCH_SETTLE_MS)
                 threads = pg.locator(S.INBOX_THREAD)
                 for i in range(min(await threads.count(), MAX_INBOX_REPLIES_PER_RUN)):
@@ -821,7 +881,9 @@ async def audit_and_collect_analytics(
                             submit = th.locator(S.INBOX_REPLY_SUBMIT).last
                             if await submit.count() > 0:
                                 await submit.click()
-                                report["unresponded_comments_handled"].append({"comment_preview": txt[:90], "reply": DEFAULT_REPLY_TEXT})
+                                report["unresponded_comments_handled"].append(
+                                    {"comment_preview": txt[:90], "reply": DEFAULT_REPLY_TEXT},
+                                )
                                 await pg.wait_for_timeout(LONG_SETTLE_MS)
         finally:
             await pg.close()

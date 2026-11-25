@@ -206,7 +206,10 @@ class StudioSelectors:
     UPLOAD_ITEM = "#text-item-0, tp-yt-paper-item:has-text('Upload videos')"
     FILE_INPUT = "input[type='file']"
     TITLE_TEXTBOX = "#title-textarea #textbox, ytcp-social-suggestions-textbox[id='title-textarea'] div#textbox"
-    DESC_TEXTBOX = "#description-textarea #textbox, ytcp-social-suggestions-textbox[id='description-textarea'] div#textbox"
+    DESC_TEXTBOX = (
+        "#description-textarea #textbox, "
+        "ytcp-social-suggestions-textbox[id='description-textarea'] div#textbox"
+    )
     NOT_MADE_FOR_KIDS = "tp-yt-paper-radio-button[name='VIDEO_MADE_FOR_KIDS_NOT_MFK']"
     NEXT_BUTTON = "#next-button"
     DONE_BUTTON = "#done-button"

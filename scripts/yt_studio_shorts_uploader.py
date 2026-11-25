@@ -35,6 +35,8 @@ from constants import (
     UPLOAD_CONFIRM_MAX_POLLS,
     UPLOAD_CONFIRM_POLL_MS,
     UPLOAD_ITEM_TIMEOUT_MS,
+)
+from constants import (
     StudioSelectors as S,
 )
 from exceptions import AuthGateError, UploadError
@@ -245,7 +247,14 @@ async def _upload_short_on_page(
                     m = re.search(r"(?:youtu\.be/|/shorts/)([\w-]+)", dlg_text)
                     if m:
                         vid_id = m.group(1)
-                if any(k in dlg_text.lower() for k in ("video published", "processing will begin", "video link", "share a link", "checks complete")):
+                done_keywords = (
+                    "video published",
+                    "processing will begin",
+                    "video link",
+                    "share a link",
+                    "checks complete",
+                )
+                if any(k in dlg_text.lower() for k in done_keywords):
                     out["success"] = True
                     close_dlg = share_dlg.locator(S.SHARE_CLOSE_BUTTON).last
                     if await close_dlg.count() > 0 and await close_dlg.is_visible():
@@ -314,7 +323,12 @@ async def upload_youtube_short(
         async with async_playwright() as p:
             browser = await p.chromium.connect_over_cdp(cdp, timeout=CDP_CONNECT_TIMEOUT_MS)
             if not browser.contexts:
-                return {"success": False, "video_url": None, "video_id": None, "message": "Chrome has no active context."}
+                return {
+                    "success": False,
+                    "video_url": None,
+                    "video_id": None,
+                    "message": "Chrome has no active context.",
+                }
             pg = await browser.contexts[0].new_page()
             try:
                 return await _upload_short_on_page(
