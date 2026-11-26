@@ -816,10 +816,10 @@ async def audit_and_collect_analytics(
                 timeout=PAGE_LOAD_TIMEOUT_MS,
             )
             try:
-                await pg.wait_for_selector(S.VIDEO_ROW, timeout=15000)
-                await pg.wait_for_timeout(SCROLL_SETTLE_MS)
+                await pg.wait_for_selector(S.VIDEO_ROW, timeout=25000)
+                await pg.wait_for_timeout(SCROLL_SETTLE_MS * 2)
             except Exception:
-                await pg.wait_for_timeout(3000)
+                await pg.wait_for_timeout(4000)
             rows = pg.locator(S.VIDEO_ROW)
             for i in range(await rows.count()):
                 raw = [x.strip() for x in (await rows.nth(i).inner_text()).splitlines() if x.strip()]
