@@ -1290,9 +1290,42 @@ def _render_procedural_rule_72_frame(t: float, total: float) -> Image.Image:
     return canvas
 
 
+def _render_procedural_space_frame(t: float, total: float) -> Image.Image:
+    """Render 100% original animated starfield + glowing ring planet fallback for space topics."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (6, 12, 34, 255))
+    draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (18, 42, 90, 95))
+    cx, cy = 540, 775
+
+    # Twinkling starfield + falling diamond/energy sparkles
+    for s in range(28):
+        sx = 90 + ((s * 173) % 900)
+        sy = 420 + ((s * 293 + int(t * (25 + s % 5 * 10))) % 700)
+        sr = 2 + (s % 3)
+        draw.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=(180, 240, 255, 210))
+
+    # Outer tilted planetary ring + glowing core planet
+    draw.arc([cx - 310, cy - 95, cx + 310, cy + 95], start=175, end=365, fill=(0, 212, 255, 195), width=10)
+    draw.ellipse(
+        [cx - 165, cy - 165, cx + 165, cy + 165],
+        fill=(18, 86, 175, 255), outline=(0, 225, 255, 255), width=5,
+    )
+    draw.arc([cx - 310, cy - 95, cx + 310, cy + 95], start=0, end=185, fill=(130, 245, 255, 235), width=12)
+
+    # Orbiting probe / moon telemetry marker
+    ang = t * 1.15
+    mx = cx + int(math.cos(ang) * 285)
+    my = cy + int(math.sin(ang) * 85)
+    draw.ellipse([mx - 12, my - 12, mx + 12, my + 12], fill=(255, 215, 0, 255), outline=(255, 255, 255, 255), width=2)
+    draw.text((cx, 425), "DEEP SPACE TELEMETRY  |  REAL COSMIC SCALE", font=_font(31), fill=(0, 220, 255), anchor="mm")
+    return canvas
+
+
 def _render_category_procedural_frame(topic: dict[str, Any], t: float, total: float) -> Image.Image:
     """Dispatch category-specific 60FPS procedural visuals when no PD photo is needed or available."""
     ck = topic["category_key"]
+    if ck == "space_science":
+        return _render_procedural_space_frame(t, total)
     if ck == "food_science":
         return _render_procedural_honeycomb_frame(t, total)
     if ck == "psychology_body":
@@ -1462,9 +1495,10 @@ def build_topic_short(
         "100% Original Script, Neural Voiceover & Custom Visuals.\n"
         f"#{' #'.join(t.replace(' ', '') for t in topic['tags'][:6])} #Shorts"
     )
+    topic_idx = next((i for i, item in enumerate(GLOBAL_VIRAL_TOPICS) if item is topic or item.get("id") == tid), 0)
     return {
         "id": tid,
-        "slot": "morning" if (GLOBAL_VIRAL_TOPICS.index(topic) % 2 == 0) else "night",
+        "slot": topic.get("slot") or ("morning" if (topic_idx % 2 == 0) else "night"),
         "video_path": str(out_mp4.resolve()),
         "preview_path": str(preview_jpg.resolve()),
         "duration_s": dur_s,

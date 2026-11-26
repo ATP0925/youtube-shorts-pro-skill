@@ -81,7 +81,7 @@ ENDLESS_FALLBACK_TOPICS: list[dict[str, Any]] = [
             "Scientists recreated this inside laser labs on Earth and watched nano diamonds form in fractions. "
             "Subscribe for tomorrow's wild cosmic weather drop."
         ),
-        "media_source": {"type": "nasa", "query": "neptune voyager blue planet rings"},
+        "media_source": {"type": "nasa", "query": "neptune planet"},
         "stages": [
             ("METHANE CLOUDS", "Rich carbon atmosphere deep inside ice giants"),
             ("10,000+ MPH CRUSH", "Extreme heat & pressure split hydrocarbon bonds"),
