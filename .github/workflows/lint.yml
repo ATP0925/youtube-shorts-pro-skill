@@ -53,8 +53,19 @@ jobs:
               "yt_studio_shorts_uploader",
               "youtube_shorts_daily_pipeline",
               "ig_reels_publisher",
+              "viral_hook_analyzer",
+              "auto_subtitle_styler",
           ]:
               __import__(mod)
+
+          for ref_file in [
+              "viral-hooks-retention.md",
+              "editing-tools-automation.md",
+              "algorithm-signals.md",
+              "thumbnail-cover-optimization.md",
+              "7-pillars-playbook.md",
+          ]:
+              assert (Path("references") / ref_file).exists(), f"Missing reference: {ref_file}"
 
           for jpath in Path("examples").glob("*.json"):
               json.loads(jpath.read_text(encoding="utf-8"))

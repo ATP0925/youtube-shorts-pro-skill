@@ -12,6 +12,8 @@ Public modules:
   yt_studio_shorts_uploader  — Full-metadata upload engine
   youtube_shorts_daily_pipeline — Master CLI orchestrator
   ig_reels_publisher         — Instagram Reels CDP publisher
+  viral_hook_analyzer        — FFmpeg viral readiness, hook & pacing scorer
+  auto_subtitle_styler       — Kinetic ASS caption generator & -14 LUFS renderer
 """
 
 __all__ = [
@@ -25,4 +27,6 @@ __all__ = [
     "yt_studio_shorts_uploader",
     "youtube_shorts_daily_pipeline",
     "ig_reels_publisher",
+    "viral_hook_analyzer",
+    "auto_subtitle_styler",
 ]

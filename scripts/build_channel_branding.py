@@ -19,11 +19,12 @@ if TYPE_CHECKING:
     from PIL import ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from constants import COVER_DEFAULT_FONT_SIZE, COVER_SAFE_CENTER_Y, SHORTS_ASPECT_HEIGHT, SHORTS_ASPECT_WIDTH
 from logger import get_logger
 
 log = get_logger(__name__)
 
-__all__ = ["build_pro_avatar", "build_pro_banner", "build_pro_watermark"]
+__all__ = ["build_pro_avatar", "build_pro_banner", "build_pro_watermark", "build_shorts_cover"]
 
 
 # ── Font loading ────────────────────────────────────────────────────────
@@ -263,10 +264,59 @@ def build_pro_watermark(out_path: Path, badge: str = "VI") -> None:
     log.info("Saved Watermark (150×150): %s", out_path)
 
 
+# ── Shorts Cover Card (1080×1920 Dual-Safe) ────────────────────────────
+
+def build_shorts_cover(
+    source_image: Path,
+    out_path: Path,
+    hook_text: str,
+    accent_color: tuple[int, int, int] = (255, 215, 0),
+) -> None:
+    """Overlay a punchy 2–3 word headline in the dual YouTube 4:5 / IG 1:1 center safe zone.
+
+    Args:
+        source_image: Extracted 1080×1920 frame or background image.
+        out_path: Output PNG cover path.
+        hook_text: Short headline text (recommended <= 3 words).
+        accent_color: RGB color tuple for high-contrast pill border and accent.
+    """
+    from PIL import Image, ImageDraw, ImageOps
+
+    img = Image.open(source_image).convert("RGBA")
+    img = ImageOps.fit(img, (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT))
+    draw = ImageDraw.Draw(img)
+
+    clean_text = hook_text.strip().upper()[:28]
+    font = _load_font(COVER_DEFAULT_FONT_SIZE, bold=True)
+    bbox = draw.textbbox((0, 0), clean_text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    pad_x, pad_y = 44, 24
+    cx, cy = SHORTS_ASPECT_WIDTH // 2, COVER_SAFE_CENTER_Y
+
+    pill_layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    pd = ImageDraw.Draw(pill_layer)
+    pd.rounded_rectangle(
+        [cx - tw // 2 - pad_x, cy - th // 2 - pad_y, cx + tw // 2 + pad_x, cy + th // 2 + pad_y],
+        radius=26,
+        fill=(10, 6, 26, 225),
+        outline=(*accent_color, 255),
+        width=5,
+    )
+    img = Image.alpha_composite(img, pill_layer)
+    draw = ImageDraw.Draw(img)
+    draw.text((cx + 3, cy + 3), clean_text, font=font, fill=(0, 0, 0, 220), anchor="mm")
+    draw.text((cx, cy), clean_text, font=font, fill=(255, 255, 255, 255), anchor="mm")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    img.convert("RGB").save(out_path, "PNG")
+    log.info("Saved Shorts Cover (1080×1920): %s", out_path)
+
+
 # ── CLI ─────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    """CLI entry point for branding asset generation."""
+    """CLI entry point for branding asset and Shorts cover generation."""
     parser = argparse.ArgumentParser(description="Generate Pro YouTube Channel Branding Assets")
     parser.add_argument("--badge", default="VI", help="Center monogram (avatar + watermark)")
     parser.add_argument("--title", default="YOUR CHANNEL", help="Channel title for banner")
@@ -275,6 +325,9 @@ def main() -> None:
     parser.add_argument("--subtitle", default="4K CLIPS  |  VIRAL MOMENTS  |  DAILY SHORTS")
     parser.add_argument("--pill", default="NEW SHORTS DAILY  |  9 AM & 5 PM EST")
     parser.add_argument("--out-dir", default="assets", help="Output directory for assets")
+    parser.add_argument("--cover-input", help="Optional frame image to turn into a 1080x1920 Shorts cover")
+    parser.add_argument("--cover-text", help="Punchy <=3 word hook headline for --cover-input")
+    parser.add_argument("--cover-out", default="assets/shorts_cover.png", help="Output path for Shorts cover")
     args = parser.parse_args()
 
     try:
@@ -282,6 +335,10 @@ def main() -> None:
     except ImportError:
         log.error("Pillow is required. Install with: pip install Pillow>=10.0")
         sys.exit(1)
+
+    if args.cover_input and args.cover_text:
+        build_shorts_cover(Path(args.cover_input), Path(args.cover_out), args.cover_text)
+        return
 
     out = Path(args.out_dir)
     build_pro_avatar(

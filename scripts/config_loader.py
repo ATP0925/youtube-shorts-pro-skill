@@ -159,18 +159,18 @@ def _probe_cdp_endpoint(cdp_url: str, timeout: float) -> bool:
 
 
 def resolve_cdp_url(host: str | None = None, timeout: float = CDP_HTTP_TIMEOUT_S) -> str:
-    """Return a reachable CDP base URL, falling back from ``localhost`` to ``127.0.0.1``.
+    """Return a reachable CDP base URL, preferring ``127.0.0.1`` over ``localhost``.
 
-    On Windows, IPv4-only Chromium/Brave listeners on ``127.0.0.1:9222`` can fail
-    short-timeout probes against ``localhost`` due to IPv6 ``::1`` resolution.
+    On Windows, Playwright's Node.js client can hang up to 15s resolving ``localhost``
+    via IPv6 ``::1`` when Chromium/Brave listens only on IPv4 ``127.0.0.1``.
     """
     cdp = (host or load_config()["cdp_url"]).rstrip("/")
-    if _probe_cdp_endpoint(cdp, timeout=timeout):
-        return cdp
     if "://localhost:" in cdp or cdp.endswith("://localhost"):
         ipv4 = cdp.replace("://localhost", "://127.0.0.1", 1)
         if _probe_cdp_endpoint(ipv4, timeout=timeout):
             return ipv4
+    if _probe_cdp_endpoint(cdp, timeout=timeout):
+        return cdp
     return cdp
 
 

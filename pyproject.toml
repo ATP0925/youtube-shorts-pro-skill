@@ -1,6 +1,6 @@
 [project]
 name = "youtube-shorts-pro-skill"
-version = "2.0.0"
+version = "3.1.0"
 description = "Portable YouTube Shorts & Gaming channel operating system via Chrome CDP"
 readme = "README.md"
 license = { text = "MIT" }
@@ -33,4 +33,6 @@ known-first-party = [
     "yt_studio_shorts_uploader",
     "youtube_shorts_daily_pipeline",
     "ig_reels_publisher",
+    "viral_hook_analyzer",
+    "auto_subtitle_styler",
 ]

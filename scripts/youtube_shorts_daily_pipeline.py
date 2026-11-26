@@ -57,12 +57,22 @@ def _select_next_short(slot: str, history: dict[str, Any], catalog: list[dict]) 
     return fallback[0] if fallback else None
 
 
-def _is_same_date(iso_ts: str | None, target_date: datetime.date) -> bool:
-    """Check if an ISO timestamp falls on the given date."""
+def _broadcast_day(dt: datetime.datetime) -> datetime.date:
+    """Return the US-aligned broadcast day (rolls over at 06:00 local time).
+
+    Late-night catch-up runs after midnight IST (e.g., 01:03 IST = 14:33 EST)
+    belong to the previous US broadcast day so they never block tonight's
+    19:30 IST / 22:45 IST prime-time slots.
+    """
+    return (dt - datetime.timedelta(hours=6)).date()
+
+
+def _is_same_date(iso_ts: str | None, target_dt: datetime.datetime) -> bool:
+    """Check if an ISO timestamp falls in the same broadcast day as *target_dt*."""
     if not iso_ts:
         return False
     try:
-        return datetime.datetime.fromisoformat(iso_ts).date() == target_date
+        return _broadcast_day(datetime.datetime.fromisoformat(iso_ts)) == _broadcast_day(target_dt)
     except Exception:
         return False
 
@@ -109,8 +119,12 @@ def run_yt_slot(
         return False
 
     history = load_json(cfg["history_path"], {"last_morning": None, "last_night": None, "uploads": []})
-    if scheduled and _is_same_date(history.get(f"last_{slot}"), now_dt.date()):
-        log.info("Scheduled %s slot already succeeded today (%s). Skipping.", slot, now_dt.date())
+    if scheduled and _is_same_date(history.get(f"last_{slot}"), now_dt):
+        log.info(
+            "Scheduled %s slot already succeeded for broadcast day %s. Skipping.",
+            slot,
+            _broadcast_day(now_dt),
+        )
         return False
 
     health = asyncio.run(check_youtube_session_health())
@@ -191,6 +205,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="YouTube Shorts Pro Skill Pipeline")
     parser.add_argument("--slot", choices=["morning", "night", "auto"], default="auto")
     parser.add_argument("--verify", action="store_true", help="Validate all catalog entries")
+    parser.add_argument("--viral-check", action="store_true", help="Include viral hook & pacing scores on --verify")
     parser.add_argument("--dry-run", action="store_true", help="Validate without uploading")
     parser.add_argument("--scheduled", action="store_true", help="Triggered by Task Scheduler")
     parser.add_argument("--daily-ops", action="store_true", help="Run analytics + comments first")
@@ -210,7 +225,13 @@ def main() -> None:
 
         if args.verify:
             catalog = load_json(cfg["catalog_path"], [])
-            sys.exit(0 if verify_catalog_items(catalog, check_loudness=True, raise_on_missing_ffmpeg=True) else 1)
+            ok_v = verify_catalog_items(
+                catalog,
+                check_loudness=True,
+                raise_on_missing_ffmpeg=True,
+                viral_check=args.viral_check,
+            )
+            sys.exit(0 if ok_v else 1)
 
         if args.status:
             h = load_json(cfg["history_path"], {"uploads": []})

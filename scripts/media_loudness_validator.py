@@ -163,6 +163,7 @@ def verify_catalog_items(
     catalog: list[dict],
     check_loudness: bool = True,
     raise_on_missing_ffmpeg: bool = False,
+    viral_check: bool = False,
 ) -> bool:
     """Validate every queued Short against resolution, duration, loudness, and metadata rules.
 
@@ -170,6 +171,7 @@ def verify_catalog_items(
         catalog: List of catalog entry dicts.
         check_loudness: Whether to run FFmpeg volumedetect (slower but thorough).
         raise_on_missing_ffmpeg: Raise :class:`FFmpegNotFoundError` instead of returning ``False``.
+        viral_check: Also compute viral hook/pacing scores via :mod:`viral_hook_analyzer`.
 
     Returns:
         ``True`` if all entries pass, ``False`` if any fail.
@@ -186,6 +188,11 @@ def verify_catalog_items(
             raise FFmpegNotFoundError()
         log.error("ffmpeg/ffprobe not found in PATH. Install FFmpeg: https://ffmpeg.org/")
         return False
+
+    viral_fn = None
+    if viral_check:
+        from viral_hook_analyzer import analyze_viral_readiness
+        viral_fn = analyze_viral_readiness
 
     total = len(catalog)
     passed = 0
@@ -212,6 +219,11 @@ def verify_catalog_items(
             if ld.get("mean_db") is not None:
                 mean_str = f"{ld['mean_db']:>5.1f}dB"
 
+        viral_suffix = ""
+        if viral_fn is not None:
+            vrep = viral_fn(vpath)
+            viral_suffix = f" │ viral={vrep['grade']}({vrep['score']})"
+
         title_ok = len(title) <= MAX_TITLE_LENGTH and REQUIRED_HASHTAG in title
         meta_ok = bool(yt.get("game_title") and yt.get("playlist_name") and yt.get("pinned_comment"))
         ok = pr["is_9_16"] and pr["under_60s"] and pr["has_audio"] and loud_ok and title_ok and meta_ok
@@ -222,9 +234,9 @@ def verify_catalog_items(
         status = "PASS" if ok else "FAIL"
         meta_label = "OK" if meta_ok else "MISS"
         log.info(
-            "  [%02d] %s │ %-36s │ %dx%d │ %5.1fs │ %s │ meta=%s │ title=%dc",
+            "  [%02d] %s │ %-36s │ %dx%d │ %5.1fs │ %s │ meta=%s │ title=%dc%s",
             idx, status, eid, pr["width"], pr["height"],
-            pr["duration"], mean_str, meta_label, len(title),
+            pr["duration"], mean_str, meta_label, len(title), viral_suffix,
         )
 
     log.info("─" * 72)
@@ -239,6 +251,7 @@ def main() -> None:
     parser.add_argument("--catalog", help="Path to catalog.json file")
     parser.add_argument("--file", help="Path to a single .mp4 file to probe")
     parser.add_argument("--no-loudness", action="store_true", help="Skip FFmpeg volumedetect")
+    parser.add_argument("--viral-check", action="store_true", help="Include viral hook/pacing telemetry")
     args = parser.parse_args()
 
     if args.file:
@@ -249,12 +262,20 @@ def main() -> None:
         log.info("Probe: %s", json.dumps(pr))
         if ld:
             log.info("Loudness: %s", json.dumps(ld))
+        if args.viral_check and not pr.get("error"):
+            from viral_hook_analyzer import analyze_viral_readiness
+            log.info("Viral: %s", json.dumps(analyze_viral_readiness(args.file)))
         ok = not pr.get("error") and pr.get("is_9_16") and pr.get("under_60s") and ld.get("ok", True)
         sys.exit(0 if ok else 1)
 
     if args.catalog:
         data = json.loads(Path(args.catalog).read_text(encoding="utf-8"))
-        ok = verify_catalog_items(data, check_loudness=not args.no_loudness, raise_on_missing_ffmpeg=True)
+        ok = verify_catalog_items(
+            data,
+            check_loudness=not args.no_loudness,
+            raise_on_missing_ffmpeg=True,
+            viral_check=args.viral_check,
+        )
         sys.exit(0 if ok else 1)
 
     parser.print_help()

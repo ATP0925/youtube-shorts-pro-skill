@@ -48,38 +48,47 @@ youtube-shorts-pro-skill/
 │   ├── config.example.json               # Channel configuration template
 │   └── catalog.example.json              # Upload queue template
 ├── references/
-│   ├── 7-pillars-playbook.md             # Complete creator checklist
+│   ├── viral-hooks-retention.md          # Hook psychology, retention loops & CPM targets
+│   ├── editing-tools-automation.md       # FFmpeg, Whisper, CapCut, Remotion & SFX pipeline
+│   ├── algorithm-signals.md              # YT Shorts / IG Reels / TikTok ranking signals
+│   ├── thumbnail-cover-optimization.md   # Safe zones, 3-word rule & cover extraction
+│   ├── 7-pillars-playbook.md             # Complete creator operations checklist
 │   ├── high-rpm-usa-monetization.md      # RPM/CPM strategy & YPP milestones
 │   ├── studio-cdp-selectors.md           # 9 Polymer DOM gotchas
 │   ├── instagram-dual-reel-sync.md       # Optional IG Reels guide
-│   └── troubleshooting.md               # Common issues & solutions
+│   └── troubleshooting.md                # Common issues & solutions
 └── scripts/
     ├── __init__.py                       # Package init with __all__
     ├── constants.py                      # All magic numbers & DOM selectors
     ├── exceptions.py                     # Custom exception hierarchy
     ├── logger.py                         # Centralized logging setup
-    ├── config_loader.py                  # Portable config & file locks
-    ├── build_channel_branding.py         # Avatar, Banner & Watermark generator
-    ├── media_loudness_validator.py        # FFprobe + FFmpeg audio validator
+    ├── config_loader.py                  # Portable config, IPv4 CDP & file locks
+    ├── build_channel_branding.py         # Avatar, Banner, Watermark & Shorts Cover generator
+    ├── viral_hook_analyzer.py            # FFmpeg hook energy, blackframe & pacing scorer
+    ├── auto_subtitle_styler.py           # Kinetic ASS subtitle styler & -14 LUFS renderer
+    ├── media_loudness_validator.py       # FFprobe + FFmpeg audio/video & viral validator
     ├── yt_channel_manager.py             # Studio channel ops via CDP
     ├── yt_studio_shorts_uploader.py      # Full-metadata upload engine
-    ├── youtube_shorts_daily_pipeline.py  # Master CLI orchestrator
+    ├── youtube_shorts_daily_pipeline.py  # Master CLI orchestrator (EST broadcast-day safe)
     ├── ig_reels_publisher.py             # Instagram Reels CDP publisher
     ├── run_slot.bat                      # Windows batch launcher
     └── setup_windows_scheduler.ps1       # Windows Task Scheduler setup
 ```
 
-## The 7 Pillars
+## The 10 Pillars
 
 | # | Pillar | What It Does |
 |---|--------|-------------|
-| 1 | **Eligibility & Legal** | Audits Feature Eligibility tiers, protects AdSense residency |
-| 2 | **Pro Storefront** | Generates 2560×1440 banner, 800×800 avatar, 150×150 watermark; enables Home Tab & COPPA |
-| 3 | **Media Quality Gate** | Validates 9:16, ≤60s, FFmpeg loudness (-38 to -3 dBFS), title ≤60 chars, `#Shorts` tag |
-| 4 | **Complete Metadata** | Playlist, Gaming category, official Game Title, US English, Tags, Altered Content |
-| 5 | **Community Loop** | Posts & pins owner CTA comments; replies to unresponded Studio inbox |
-| 6 | **EST/PST Scheduling** | Dual US prime-time slots with cross-platform file locks & same-day dedup |
-| 7 | **Analytics Feedback** | Scrapes Dashboard, Shorts metrics, Earn progress into timestamped JSON history |
+| 1 | **Viral Hook Psychology** | First-3s audio energy & opening blackframe detection (`viral_hook_analyzer.py`) |
+| 2 | **Editing & Automation** | Kinetic 9:16 ASS subtitles, -14 LUFS mastering & blur-padding (`auto_subtitle_styler.py`) |
+| 3 | **Algorithm Signals** | Optimizes for swipe-away <30%, completion >90%, loops, shares & saves |
+| 4 | **Cover Optimization** | Dual YT 4:5 / IG 1:1 safe-zone 3-word cover overlay (`build_channel_branding.py`) |
+| 5 | **Eligibility & Legal** | Audits Feature Eligibility tiers, protects AdSense residency |
+| 6 | **Pro Storefront** | Generates 2560×1440 banner, 800×800 avatar, 150×150 watermark; enables Home Tab & COPPA |
+| 7 | **Media Quality Gate** | Validates 9:16, ≤60s, FFmpeg loudness (-38 to -3 dBFS), viral readiness, title ≤60 chars |
+| 8 | **Complete Metadata** | Playlist, Gaming category, official Game Title, US English, Tags, Altered Content |
+| 9 | **Community Loop** | Posts & pins owner CTA comments; replies to unresponded Studio inbox |
+| 10 | **EST/PST Scheduling** | Dual US prime-time slots with EST broadcast-day dedup & cross-platform file locks |
 
 ## Prerequisites
 
@@ -129,7 +138,7 @@ python scripts/youtube_shorts_daily_pipeline.py --slot morning --daily-ops
 
 | Command | Description |
 |---------|-------------|
-| `--verify` | Validate all catalog entries (resolution, duration, loudness, metadata completeness) |
+| `--verify [--viral-check]` | Validate all catalog entries (resolution, duration, loudness, metadata, optional viral hook score) |
 | `--audit` | Scrape Studio Analytics, Feature Eligibility, Earn progress; reply to inbox comments |
 | `--optimize-live` | Enable Home Tab + Watermark + COPPA + backfill metadata on published Shorts |
 | `--slot morning\|night\|auto` | Select and upload next queued Short for the given time slot |

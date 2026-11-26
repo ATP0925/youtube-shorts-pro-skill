@@ -35,7 +35,7 @@ metadata:
     - whisper transcription
     - gaming clip editing
   author: ATP0925
-  version: "3.0.0"
+  version: "3.1.0"
 ---
 
 # YouTube Shorts Pro Skill
@@ -60,13 +60,13 @@ Complete AI-agent operating system for **creating, editing, optimizing, and auto
 
 | # | Pillar | Reference / Script |
 |---|--------|--------------------|
-| 1 | **Viral Hook Psychology** | [references/viral-hooks-retention.md](references/viral-hooks-retention.md) |
-| 2 | **Editing & Automation Pipeline** | [references/editing-tools-automation.md](references/editing-tools-automation.md) |
+| 1 | **Viral Hook Psychology** | `viral_hook_analyzer.py`, [viral-hooks-retention.md](references/viral-hooks-retention.md) |
+| 2 | **Editing & Automation Pipeline** | `auto_subtitle_styler.py`, [editing-tools-automation.md](references/editing-tools-automation.md) |
 | 3 | **Platform Algorithm Signals** | [references/algorithm-signals.md](references/algorithm-signals.md) |
-| 4 | **Thumbnail & Cover Optimization** | [references/thumbnail-cover-optimization.md](references/thumbnail-cover-optimization.md) |
+| 4 | **Thumbnail & Cover Optimization** | `build_channel_branding.py --cover-input`, [thumbnail-cover-optimization.md](references/thumbnail-cover-optimization.md) |
 | 5 | Eligibility & Legal AdSense | `yt_channel_manager.py`, [7-pillars-playbook.md](references/7-pillars-playbook.md) |
 | 6 | Pro Storefront (Banner/Avatar/Watermark) | `build_channel_branding.py`, `yt_channel_manager.py` |
-| 7 | Media & Policy Gate (9:16, ≤60s, loudness) | `media_loudness_validator.py` |
+| 7 | Media & Policy Gate (9:16, ≤60s, loudness) | `media_loudness_validator.py --viral-check` |
 | 8 | Complete Video Metadata | `yt_studio_shorts_uploader.py` |
 | 9 | EST/PST Dual-Slot Scheduling | `youtube_shorts_daily_pipeline.py` |
 | 10 | Closed Analytics Loop | `yt_channel_manager.py` |
@@ -142,7 +142,10 @@ SEC 25-30: PAYOFF + LOOP-BACK ENDING (seamless → loops to SEC 0)
 ```bash
 cp examples/config.example.json config.json        # Configure
 python scripts/build_channel_branding.py --title "CHANNEL NAME"  # Brand
-python scripts/youtube_shorts_daily_pipeline.py --verify          # Validate
+python scripts/build_channel_branding.py --cover-input frame.jpg --cover-text "FASTEST CAR" --cover-out cover.png
+python scripts/viral_hook_analyzer.py --catalog queue/catalog.json  # Viral Score
+python scripts/auto_subtitle_styler.py --whisper-json subs.json --render-input raw.mp4 --render-output out.mp4
+python scripts/youtube_shorts_daily_pipeline.py --verify --viral-check  # Validate
 python scripts/youtube_shorts_daily_pipeline.py --optimize-live   # Setup Studio
 python scripts/youtube_shorts_daily_pipeline.py --slot morning --daily-ops  # Upload
 ```
