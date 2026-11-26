@@ -32,6 +32,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from auto_subtitle_styler import build_ass_from_segments
 from constants import (
+    MAX_TITLE_LENGTH,
+    REQUIRED_HASHTAG,
     SHORTS_ASPECT_HEIGHT,
     SHORTS_ASPECT_WIDTH,
     TARGET_LOUDNORM_I,
@@ -124,8 +126,8 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "title": "Stare At The Dot & Watch Gray Turn Full Color! #Shorts",
         "script": (
             "Stare straight at the glowing white dot in the center right now and do not look away. "
-            "In ten seconds, the bright neon ring around this frame will suddenly vanish into pure gray. "
-            "Keep your eyes locked on the center dot while your retinal cones adapt to magenta and cyan. "
+            "Hold your focus right here as the bright neon ring slowly charges your retinal sensors. "
+            "Keep your eyes locked on the center dot while your cones adapt to magenta and cyan. "
             "Three, two, one, switch! Do you see golden yellow and deep blue on pure grayscale? "
             "Look away and the color disappears instantly. Double tap to test your eyes again right from..."
         ),
@@ -295,7 +297,7 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "badge": "WEALTH MATH",
         "hook_title": "$1,000,000 CASH TODAY OR $0.01 DOUBLED FOR 30 DAYS?",
         "hook_sub": "90% of people pick the wrong option instantly",
-        "title": "$1 Million Cash vs $0.01 Doubled 30 Days — Watch Math! #Shorts",
+        "title": "$1M Cash vs $0.01 Doubled 30 Days — Watch Math! #Shorts",
         "script": (
             "Would you take one million dollars today, or one penny doubled every day for thirty days? "
             "On day fifteen, that penny is only worth one hundred sixty three dollars while cash leads cleanly. "
@@ -362,18 +364,28 @@ def fetch_nasa_pd_images(query: str, count: int = 4) -> list[Image.Image]:
     return imgs
 
 
-def fetch_openverse_cc0_images(query: str, count: int = 4) -> list[Image.Image]:
-    """Fetch strictly CC0 / Public Domain Mark imagery from Openverse."""
+def fetch_wikimedia_pd_images(query: str, count: int = 4) -> list[Image.Image]:
+    """Fetch strictly Public Domain / CC0 verified images from Wikimedia Commons API."""
     imgs: list[Image.Image] = []
     try:
         q = urllib.parse.quote(query)
-        url = f"https://api.openverse.org/v1/images/?q={q}&license=cc0,pdm&page_size=12"
+        url = (
+            "https://commons.wikimedia.org/w/api.php?action=query&generator=search"
+            f"&gsrnamespace=6&gsrsearch={q}&gsrlimit=12&prop=imageinfo"
+            "&iiprop=url|extmetadata|mime&iiurlwidth=1200&format=json"
+        )
         data = _http_get_json(url)
-        for res in data.get("results", []):
-            lic = (res.get("license") or "").lower()
-            if lic not in {"cc0", "pdm"}:
+        pages = data.get("query", {}).get("pages", {}).values()
+        for page in pages:
+            info = (page.get("imageinfo") or [{}])[0]
+            mime = (info.get("mime") or "").lower()
+            if mime not in {"image/jpeg", "image/png"}:
                 continue
-            src = res.get("url") or res.get("thumbnail") or ""
+            meta = info.get("extmetadata") or {}
+            lic = (meta.get("LicenseShortName", {}).get("value") or "").lower()
+            if not any(tok in lic for tok in ("public domain", "cc0", "pd-")):
+                continue
+            src = info.get("thumburl") or info.get("url") or ""
             if src:
                 im = _download_image(src)
                 if im is not None:
@@ -381,8 +393,52 @@ def fetch_openverse_cc0_images(query: str, count: int = 4) -> list[Image.Image]:
             if len(imgs) >= count:
                 break
     except Exception as exc:
-        log.warning("Openverse CC0 fetch note (%s): %s", query, exc)
+        log.warning("Wikimedia PD fetch note (%s): %s", query, exc)
     return imgs
+
+
+def fetch_openverse_cc0_images(query: str, count: int = 4) -> list[Image.Image]:
+    """Fetch strictly CC0 / Public Domain Mark imagery from Openverse with Wikimedia PD fallback."""
+    imgs: list[Image.Image] = []
+    queries = [query]
+    words = query.split()
+    if len(words) > 2:
+        queries.append(" ".join(words[:2]))
+    for cand_q in queries:
+        if len(imgs) >= count:
+            break
+        try:
+            q = urllib.parse.quote(cand_q)
+            url = f"https://api.openverse.org/v1/images/?q={q}&license=cc0,pdm&page_size=12"
+            data = _http_get_json(url)
+            for res in data.get("results", []):
+                lic = (res.get("license") or "").lower()
+                if lic not in {"cc0", "pdm"}:
+                    continue
+                src = res.get("url") or res.get("thumbnail") or ""
+                if src:
+                    im = _download_image(src)
+                    if im is not None:
+                        imgs.append(im)
+                if len(imgs) >= count:
+                    break
+        except Exception as exc:
+            log.warning("Openverse CC0 fetch note (%s): %s", cand_q, exc)
+    if not imgs:
+        imgs = fetch_wikimedia_pd_images(query, count=count)
+    return imgs
+
+
+def _safe_shorts_title(title: str, max_len: int = MAX_TITLE_LENGTH) -> str:
+    """Keep title <= *max_len* chars while preserving trailing #Shorts hashtag intact."""
+    clean = title.strip()
+    if REQUIRED_HASHTAG.lower() not in clean.lower():
+        clean = f"{clean} {REQUIRED_HASHTAG}"
+    if len(clean) <= max_len:
+        return clean
+    base = clean.replace(REQUIRED_HASHTAG, "").replace(REQUIRED_HASHTAG.lower(), "").rstrip(" -–|")
+    budget = max_len - len(REQUIRED_HASHTAG) - 1
+    return f"{base[:budget].rstrip()} {REQUIRED_HASHTAG}"
 
 
 # ── Edge-TTS Narration + Millisecond Word Timestamps ───────────────────
@@ -536,37 +592,46 @@ def _fit_cover_zoom(img: Image.Image, target_w: int, target_h: int, zoom: float,
     return img.crop((x0, y0, x0 + crop_w, y0 + crop_h)).resize((target_w, target_h), Image.Resampling.BILINEAR)
 
 
+def _draw_center_grid(draw: ImageDraw.ImageDraw, line_col: tuple[int, int, int, int]) -> None:
+    """Draw subtle telemetry grid behind procedural visualizations."""
+    for gx in range(80, 1040, 120):
+        draw.line([(gx, 395), (gx, 1145)], fill=line_col, width=2)
+    for gy in range(405, 1155, 120):
+        draw.line([(60, gy), (1020, gy)], fill=line_col, width=2)
+
+
 def _render_procedural_illusion_frame(t: float, total: float) -> Image.Image:
-    """Render 100% original optical color-afterimage illusion + grayscale swap reveal at 62%."""
+    """Render 100% original optical color-afterimage illusion + grayscale swap reveal at 72%."""
     canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (14, 12, 22, 255))
     draw = ImageDraw.Draw(canvas)
     prog = t / max(1.0, total)
-    cx, cy = 540, 775
+    cx, cy = 540, 785
+    reveal_at = 0.72
 
-    # Phase 1 (0..62%): Intense Magenta/Cyan rotating rings + white fixation dot
-    # Phase 2 (62..100%): Instant swap to neutral B&W check pattern so brain hallucinates gold/blue!
-    if prog < 0.62:
+    # Phase 1 (0..72%): Intense Magenta/Cyan rotating rings + white fixation dot
+    # Phase 2 (72..100%): Instant swap to neutral B&W check pattern so brain hallucinates gold/blue!
+    if prog < reveal_at:
         phase = t * 2.2
-        for ring in range(9, 0, -1):
-            r = ring * 44
+        for ring in range(8, 0, -1):
+            r = ring * 42
             col = (255, 30, 170, 255) if (ring % 2 == 0) else (0, 240, 220, 255)
             pts_rect = [cx - r, cy - r, cx + r, cy + r]
-            draw.ellipse(pts_rect, outline=col, width=22)
+            draw.ellipse(pts_rect, outline=col, width=20)
         for k in range(12):
             ang = phase + (k * math.pi / 6.0)
-            px = cx + int(math.cos(ang) * 320)
-            py = cy + int(math.sin(ang) * 320)
-            draw.ellipse([px - 16, py - 16, px + 16, py + 16], fill=(255, 255, 255, 220))
-        rem = max(1, int(math.ceil((0.62 * total) - t)))
-        draw.text((cx, 430), f"KEEP STARING AT DOT: {rem}s", font=_font(36), fill=(255, 255, 255), anchor="mm")
+            px = cx + int(math.cos(ang) * 305)
+            py = cy + int(math.sin(ang) * 305)
+            draw.ellipse([px - 15, py - 15, px + 15, py + 15], fill=(255, 255, 255, 220))
+        rem = max(1, int(math.ceil((reveal_at * total) - t)))
+        draw.text((cx, 418), f"KEEP STARING AT DOT: {rem}s", font=_font(34), fill=(255, 255, 255), anchor="mm")
     else:
         for row in range(8):
             for col_i in range(8):
                 shade = 195 if (row + col_i) % 2 == 0 else 115
-                x0 = 190 + col_i * 88
-                y0 = 425 + row * 88
-                draw.rectangle([x0, y0, x0 + 88, y0 + 88], fill=(shade, shade, shade, 255))
-        draw.text((cx, 405), "GRAYSCALE REVEAL — DO YOU SEE COLOR?!", font=_font(34), fill=(255, 215, 0), anchor="mm")
+                x0 = 220 + col_i * 80
+                y0 = 465 + row * 80
+                draw.rectangle([x0, y0, x0 + 80, y0 + 80], fill=(shade, shade, shade, 255))
+        draw.text((cx, 418), "GRAYSCALE REVEAL - DO YOU SEE COLOR?!", font=_font(32), fill=(255, 215, 0), anchor="mm")
 
     # Constant fixation dot in exact center
     draw.ellipse([cx - 18, cy - 18, cx + 18, cy + 18], fill=(255, 255, 255, 255), outline=(0, 0, 0, 255), width=4)
@@ -578,12 +643,7 @@ def _render_procedural_gps_frame(t: float, total: float) -> Image.Image:
     canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (6, 14, 30, 255))
     draw = ImageDraw.Draw(canvas)
     cx, cy = 540, 780
-
-    # Grid lines
-    for gx in range(80, 1040, 120):
-        draw.line([(gx, 390), (gx, 1140)], fill=(20, 45, 85, 110), width=2)
-    for gy in range(400, 1160, 120):
-        draw.line([(60, gy), (1020, gy)], fill=(20, 45, 85, 110), width=2)
+    _draw_center_grid(draw, (20, 45, 85, 110))
 
     # Orbit rings + Earth
     draw.ellipse([cx - 320, cy - 320, cx + 320, cy + 320], outline=(60, 160, 255, 170), width=4)
@@ -614,6 +674,7 @@ def _render_procedural_wealth_frame(t: float, total: float) -> Image.Image:
     """Render 100% original animated Day 1..30 exponential race graph ($1M vs $0.01 doubled)."""
     canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (6, 22, 14, 255))
     draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (18, 65, 40, 95))
     prog = min(1.0, t / max(1.0, total * 0.88))
     day = max(1, min(30, int(1 + prog * 29)))
     penny_val = 0.01 * (2 ** (day - 1))
@@ -640,8 +701,161 @@ def _render_procedural_wealth_frame(t: float, total: float) -> Image.Image:
     draw.ellipse([lx - 14, ly - 14, lx + 14, ly + 14], fill=(255, 255, 255, 255), outline=(255, 215, 0, 255), width=4)
 
     val_str = f"${penny_val:,.2f}" if penny_val < 1000 else f"${penny_val:,.0f}"
-    draw.text((540, 430), f"DAY {day}/30  │  PENNY = {val_str}", font=_font(40), fill=(255, 215, 0), anchor="mm")
+    draw.text((540, 430), f"DAY {day}/30  |  PENNY = {val_str}", font=_font(38), fill=(255, 215, 0), anchor="mm")
     return canvas
+
+
+def _render_procedural_honeycomb_frame(t: float, total: float) -> Image.Image:
+    """Render 100% original animated golden honeycomb + chemistry telemetry meters."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (24, 14, 6, 255))
+    draw = ImageDraw.Draw(canvas)
+    prog = min(1.0, t / max(1.0, total))
+
+    # Animated hexagonal honeycomb lattice
+    rad = 46
+    dx = int(rad * 1.55)
+    dy = int(rad * math.sqrt(3))
+    for col in range(-1, 13):
+        for row in range(6):
+            hx = 110 + col * dx
+            hy = 525 + row * dy + (dy // 2 if col % 2 else 0)
+            if not (100 <= hx <= 980 and 495 <= hy <= 1040):
+                continue
+            wave = 0.5 + 0.5 * math.sin(t * 2.8 - col * 0.45 + row * 0.6)
+            fill_col = (int(95 + 130 * wave), int(58 + 85 * wave), 8, 225)
+            pts = [
+                (hx + int(rad * math.cos(a * math.pi / 3)), hy + int(rad * math.sin(a * math.pi / 3)))
+                for a in range(6)
+            ]
+            draw.polygon(pts, fill=fill_col, outline=(255, 195, 0, 240))
+
+    draw.text(
+        (540, 425),
+        "MOISTURE < 18%  |  pH 3.9  |  NATURAL H2O2",
+        font=_font(31),
+        fill=(255, 215, 60),
+        anchor="mm",
+    )
+
+    # Preservation age bar at bottom of center viewport
+    yrs = int(prog * 3200)
+    draw.rounded_rectangle(
+        [120, 1075, 960, 1135], radius=18, fill=(38, 22, 8, 235), outline=(255, 195, 0, 220), width=3,
+    )
+    bar_w = int(128 + (952 - 128) * max(0.05, prog))
+    draw.rounded_rectangle([128, 1083, bar_w, 1127], radius=12, fill=(255, 175, 0, 215))
+    draw.text(
+        (540, 1105),
+        f"BACTERIA GROWTH: 0%  |  SHELF LIFE: {yrs:,}+ YRS",
+        font=_font(28),
+        fill=(255, 255, 255),
+        anchor="mm",
+    )
+    return canvas
+
+
+def _render_procedural_brain_frame(t: float, total: float) -> Image.Image:
+    """Render 100% original animated neural network + cortisol/EEG sleep-loss wave."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (8, 20, 22, 255))
+    draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (18, 65, 65, 100))
+    prog = min(1.0, t / max(1.0, total * 0.9))
+    hours = max(1, min(72, int(1 + prog * 71)))
+
+    # Cortical nodes forming stylized brain dome centered at (540, 725)
+    rel_nodes = [
+        (-210, -40), (-150, -135), (-55, -175), (65, -170), (175, -115), (225, -20),
+        (-220, 65), (-115, -45), (0, -65), (120, -35), (200, 80),
+        (-130, 130), (0, 95), (115, 135),
+    ]
+    nodes = [(540 + rx, 730 + ry) for rx, ry in rel_nodes]
+    edges = [
+        (0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (6, 11), (11, 12),
+        (12, 13), (13, 10), (10, 5), (1, 7), (7, 8), (8, 9), (9, 4),
+        (7, 12), (8, 12), (9, 13), (6, 7), (9, 10), (2, 8), (3, 9),
+    ]
+    alert = hours >= 48
+    line_base = (255, 95, 95, 210) if alert else (0, 255, 165, 195)
+    for i, j in edges:
+        draw.line([nodes[i], nodes[j]], fill=line_base, width=4)
+    for idx, (nx, ny) in enumerate(nodes):
+        pulse = 10 + int(8 * abs(math.sin(t * 3.5 + idx * 0.7)))
+        ncol = (255, 80, 90, 255) if (alert and idx % 3 == int(t * 3) % 3) else (0, 255, 165, 255)
+        draw.ellipse([nx - pulse, ny - pulse, nx + pulse, ny + pulse], fill=ncol, outline=(255, 255, 255, 230), width=2)
+
+    # Bottom EEG / Micro-sleep oscilloscope waveform (Y=965..1125)
+    draw.rounded_rectangle(
+        [100, 965, 980, 1125], radius=20, fill=(10, 28, 32, 230), outline=(0, 255, 165, 175), width=3,
+    )
+    wave_pts: list[tuple[int, int]] = []
+    amp = 18 if hours < 24 else (42 if hours < 60 else 58)
+    for x in range(120, 961, 12):
+        y = 1045 + int(math.sin(x * 0.045 - t * 9.0) * amp * math.cos(x * 0.013 + t * 2.1))
+        wave_pts.append((x, y))
+    if len(wave_pts) >= 2:
+        draw.line(wave_pts, fill=(255, 95, 95, 255) if alert else (0, 255, 165, 255), width=5)
+
+    state_txt = "HALLUCINATION RISK" if hours >= 68 else ("MICRO-SLEEPS ACTIVE" if hours >= 48 else "CORTISOL RISING")
+    draw.text((540, 425), f"HOUR {hours} / 72  |  {state_txt}", font=_font(34), fill=(0, 255, 165), anchor="mm")
+    return canvas
+
+
+def _render_procedural_roman_frame(t: float, total: float) -> Image.Image:
+    """Render 100% original animated Roman concrete self-healing arch + quicklime crystals."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (24, 16, 12, 255))
+    draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (65, 42, 28, 95))
+    prog = min(1.0, t / max(1.0, total))
+
+    # Left & Right stone piers + semicircular masonry arch
+    for py in range(740, 1020, 56):
+        draw.rectangle([235, py, 375, py + 50], fill=(112, 86, 68, 255), outline=(255, 185, 120, 140), width=2)
+        draw.rectangle([705, py, 845, py + 50], fill=(112, 86, 68, 255), outline=(255, 185, 120, 140), width=2)
+    draw.pieslice(
+        [235, 495, 845, 995], start=180, end=360, fill=(125, 96, 75, 255), outline=(255, 170, 90, 220), width=4,
+    )
+    draw.pieslice(
+        [375, 625, 705, 895], start=180, end=360, fill=(24, 16, 12, 255), outline=(255, 170, 90, 170), width=3,
+    )
+
+    # Reactive quicklime white clasts baked inside masonry
+    for kx, ky in [(285, 810), (330, 920), (420, 585), (540, 550), (660, 595), (755, 815), (790, 915), (765, 960)]:
+        draw.ellipse([kx - 9, ky - 9, kx + 9, ky + 9], fill=(255, 248, 230, 240))
+
+    # Seawater surge along base (Y=1025..1125)
+    wave_pts = [(100, 1130)]
+    for x in range(100, 981, 20):
+        wave_pts.append((x, 1045 + int(12 * math.sin(x * 0.03 + t * 5.0))))
+    wave_pts.append((980, 1130))
+    draw.polygon(wave_pts, fill=(25, 130, 185, 210), outline=(80, 220, 255, 240))
+
+    # Crack formation (0.15..0.55) -> CaCO3 lime crystal self-healing glow (0.55..1.0)
+    crack_pts = [(740, 650), (765, 740), (745, 830), (775, 925), (755, 1020)]
+    if prog < 0.55:
+        draw.line(crack_pts, fill=(255, 70, 45, 255), width=8)
+        status = "WAVE CRACK FORMING -> H2O ENTERS"
+        scol = (255, 125, 85)
+    else:
+        heal_p = min(1.0, (prog - 0.55) / 0.35)
+        draw.line(crack_pts, fill=(65, 245, 180, int(110 + 145 * heal_p)), width=12)
+        draw.line(crack_pts, fill=(255, 250, 235, 255), width=5)
+        status = f"CaO RECRYSTALLIZED -> {int(heal_p * 100)}% SEALED!"
+        scol = (90, 255, 185)
+
+    draw.text((540, 425), status, font=_font(33), fill=scol, anchor="mm")
+    return canvas
+
+
+def _render_category_procedural_frame(topic: dict[str, Any], t: float, total: float) -> Image.Image:
+    """Dispatch category-specific 60FPS procedural visuals when no PD photo is needed or available."""
+    ck = topic["category_key"]
+    if ck == "food_science":
+        return _render_procedural_honeycomb_frame(t, total)
+    if ck == "psychology_body":
+        return _render_procedural_brain_frame(t, total)
+    if ck == "weird_history":
+        return _render_procedural_roman_frame(t, total)
+    return Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (*topic["bg_rgb"], 255))
 
 
 def _build_photo_panel_frame(
@@ -650,29 +864,28 @@ def _build_photo_panel_frame(
     t: float,
     total: float,
 ) -> Image.Image:
-    """Render photo-driven category frame with multi-scene Ken Burns cuts every ~4–6 seconds."""
+    """Render photo-driven category frame with Ken Burns cuts, or procedural engine fallback."""
     acc = topic["accent"]
     bg_rgb = topic["bg_rgb"]
     if not imgs:
-        canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (*bg_rgb, 255))
-    else:
-        scene_len = max(3.5, total / max(3, len(imgs) * 2))
-        s_idx = int(t / scene_len)
-        im = imgs[s_idx % len(imgs)]
-        sub_prog = (t % scene_len) / scene_len
-        zoom = 1.04 + 0.16 * sub_prog
-        pan = math.sin(s_idx * 1.7 + sub_prog * 2.0) * 0.45
+        return _render_category_procedural_frame(topic, t, total)
+    scene_len = max(3.5, total / max(3, len(imgs) * 2))
+    s_idx = int(t / scene_len)
+    im = imgs[s_idx % len(imgs)]
+    sub_prog = (t % scene_len) / scene_len
+    zoom = 1.04 + 0.16 * sub_prog
+    pan = math.sin(s_idx * 1.7 + sub_prog * 2.0) * 0.45
 
-        bg_fit = _fit_cover_zoom(im, SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT, zoom=1.1)
-        bg = bg_fit.filter(ImageFilter.GaussianBlur(26))
-        dark = Image.new("RGBA", bg.size, (bg_rgb[0], bg_rgb[1], bg_rgb[2], 140))
-        canvas = Image.alpha_composite(bg.convert("RGBA"), dark)
+    bg_fit = _fit_cover_zoom(im, SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT, zoom=1.1)
+    bg = bg_fit.filter(ImageFilter.GaussianBlur(26))
+    dark = Image.new("RGBA", bg.size, (bg_rgb[0], bg_rgb[1], bg_rgb[2], 140))
+    canvas = Image.alpha_composite(bg.convert("RGBA"), dark)
 
-        # Mid viewport card (1080x760 window at Y=395..1145)
-        fg = _fit_cover_zoom(im, 960, 740, zoom=zoom, pan_x=pan)
-        border = Image.new("RGBA", (972, 752), (*acc, 255))
-        border.paste(fg, (6, 6))
-        canvas.paste(border, (54, 395))
+    # Mid viewport card (960x740 window at Y=395..1145)
+    fg = _fit_cover_zoom(im, 960, 740, zoom=zoom, pan_x=pan)
+    border = Image.new("RGBA", (972, 752), (*acc, 255))
+    border.paste(fg, (6, 6))
+    canvas.paste(border, (54, 395))
     return canvas
 
 
@@ -693,6 +906,8 @@ def _render_frame_sequence(
         t = i / fps
         prog = t / max(0.01, duration_s)
         stage_idx = min(stages_n - 1, int(prog * stages_n))
+        if mtype == "procedural_illusion" and prog >= 0.72:
+            stage_idx = stages_n - 1
 
         if mtype == "procedural_illusion":
             canvas = _render_procedural_illusion_frame(t, duration_s)
@@ -774,9 +989,9 @@ def build_topic_short(
     if res.returncode != 0 or not out_mp4.exists():
         raise RuntimeError(f"FFmpeg compilation failed for {tid}: {(res.stderr or '')[-500:]}")
 
-    # Save visual QA midpoint frame
+    # Save visual QA climax/reveal frame (78% covers grayscale swap + peak math/seal states)
     subprocess.run(
-        ["ffmpeg", "-y", "-ss", str(round(dur_s * 0.65, 2)), "-i", str(out_mp4), "-vframes", "1", str(preview_jpg)],
+        ["ffmpeg", "-y", "-ss", str(round(dur_s * 0.78, 2)), "-i", str(out_mp4), "-vframes", "1", str(preview_jpg)],
         capture_output=True,
     )
 
@@ -795,7 +1010,7 @@ def build_topic_short(
         "duration_s": dur_s,
         "generated_at": datetime.datetime.now().isoformat(),
         "youtube_shorts": {
-            "title": topic["title"][:60],
+            "title": _safe_shorts_title(topic["title"]),
             "description": desc,
             "tags": topic["tags"],
             "category": topic["yt_category"],
