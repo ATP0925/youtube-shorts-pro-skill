@@ -294,15 +294,31 @@ async def _expand_show_more(pg: Any, scope_selector: str = "") -> bool:
     return False
 
 
+_CATEGORY_ALIASES: dict[str, tuple[str, ...]] = {
+    "science & technology": ("Science and technology", "Science & Technology"),
+    "science and technology": ("Science and technology", "Science & Technology"),
+    "howto & style": ("How-to and style", "Howto & Style"),
+    "how-to and style": ("How-to and style", "Howto & Style"),
+    "autos & vehicles": ("Cars and vehicles", "Autos & Vehicles"),
+    "people & blogs": ("People and blogs", "People & Blogs"),
+    "pets & animals": ("Pets and animals", "Pets & Animals"),
+    "news & politics": ("News and politics", "News & Politics"),
+    "film & animation": ("Film and animation", "Film & Animation"),
+}
+
+
 async def _dismiss_open_dropdown(pg: Any) -> None:
-    """Close any open paper dropdown / text-menu without dismissing the parent upload modal."""
-    try:
-        menu = pg.locator("tp-yt-iron-dropdown:visible, ytcp-text-menu:visible").first
-        if await menu.count() > 0:
+    """Close any open paper text-menu/dropdown without dismissing the parent upload modal."""
+    menu_sel = "tp-yt-paper-dialog.ytcp-text-menu:visible, tp-yt-iron-dropdown:visible"
+    for _ in range(3):
+        try:
+            menu = pg.locator(menu_sel).first
+            if await menu.count() == 0:
+                break
             await pg.keyboard.press("Escape")
             await pg.wait_for_timeout(MODAL_DISMISS_MS)
-    except Exception:
-        pass
+        except Exception:
+            break
 
 
 async def _ensure_gaming_and_us_language(
@@ -315,22 +331,29 @@ async def _ensure_gaming_and_us_language(
     changed = False
     prefix = f"{scope_selector} " if scope_selector else ""
     base_lang = target_lang.split("(")[0].strip()
+    cat_candidates = _CATEGORY_ALIASES.get(category_name.strip().lower(), (category_name,))
     try:
         cat_trig = pg.locator(f"{prefix}{S.CATEGORY_TRIGGER}").first
         if await cat_trig.count() > 0:
             await cat_trig.scroll_into_view_if_needed()
-            cat_txt = (await cat_trig.inner_text()).strip()
-            if category_name.lower() not in cat_txt.lower():
+            cat_txt = (await cat_trig.inner_text()).strip().lower()
+            if not any(c.lower() in cat_txt for c in cat_candidates):
                 await _click_center(pg, cat_trig)
                 await pg.wait_for_timeout(DROPDOWN_SETTLE_MS)
-                opt = pg.locator(f"tp-yt-paper-item:has-text('{category_name}')").first
-                if await opt.count() > 0:
-                    await opt.scroll_into_view_if_needed()
-                    await opt.click()
-                    await pg.wait_for_timeout(SCROLL_SETTLE_MS)
-                    log.info("Set Category → %s", category_name)
-                    changed = True
-                else:
+                picked = False
+                for cand in cat_candidates:
+                    opt = pg.locator(
+                        f"tp-yt-paper-dialog.ytcp-text-menu:visible tp-yt-paper-item:has-text('{cand}')"
+                    ).first
+                    if await opt.count() > 0:
+                        await opt.scroll_into_view_if_needed()
+                        await opt.click()
+                        await pg.wait_for_timeout(SCROLL_SETTLE_MS)
+                        log.info("Set Category → %s", cand)
+                        changed = True
+                        picked = True
+                        break
+                if not picked:
                     await _dismiss_open_dropdown(pg)
 
         for lang_label in ("Video language", "Title and description language"):
@@ -341,9 +364,13 @@ async def _ensure_gaming_and_us_language(
                 if base_lang.lower() not in ltxt.lower():
                     await _click_center(pg, ltrig)
                     await pg.wait_for_timeout(DROPDOWN_SETTLE_MS)
-                    eopt = pg.locator(f"tp-yt-paper-item:has-text('{target_lang}')").first
+                    eopt = pg.locator(
+                        f"tp-yt-paper-dialog.ytcp-text-menu:visible tp-yt-paper-item:has-text('{target_lang}')"
+                    ).first
                     if await eopt.count() == 0:
-                        eopt = pg.locator(f"tp-yt-paper-item:text-is('{base_lang}')").first
+                        eopt = pg.locator(
+                            f"tp-yt-paper-dialog.ytcp-text-menu:visible tp-yt-paper-item:text-is('{base_lang}')"
+                        ).first
                     if await eopt.count() > 0:
                         await eopt.scroll_into_view_if_needed()
                         await eopt.click()

@@ -218,7 +218,9 @@ async def _upload_short_on_page(
 
     # Dismiss any stray open dropdown menu/backdrop before advancing wizard steps
     for _ in range(3):
-        menu = pg.locator("tp-yt-iron-dropdown:visible, ytcp-text-menu:visible, ytcp-playlist-dialog:visible").first
+        menu = pg.locator(
+            "tp-yt-paper-dialog.ytcp-text-menu:visible, tp-yt-iron-dropdown:visible, ytcp-playlist-dialog:visible"
+        ).first
         if await menu.count() == 0:
             break
         await pg.keyboard.press("Escape")
