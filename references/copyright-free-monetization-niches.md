@@ -48,7 +48,7 @@ Research across YouTube Shorts' **200B+ daily views** shows these categories com
 ### Audio & Voiceover Stack (Verified Content-ID Free)
 | Component | Tool / Source | Why Claim-Free |
 |---|---|---|
-| **US English Neural Voiceover** | `edge-tts` (`en-US-AndrewMultilingualNeural`, `en-US-AvaMultilingualNeural`, `en-US-BrianMultilingualNeural`) | Emits exact `WordBoundary` millisecond timestamps (`SubMaker`) for zero-cost frame-accurate kinetic ASS captions |
+| **US English Neural Voiceover** | `edge-tts` (`en-US-AndrewNeural`, `en-US-AvaNeural`, `en-US-BrianNeural`) with `boundary="WordBoundary"` | Emits exact millisecond `WordBoundary` timestamps for zero-cost frame-accurate kinetic ASS captions |
 | **Ambient Music Bed** | **FFmpeg Synthesized Harmonics** (`aevalsrc` / `sine` harmonic chords, warm low-pass ambient pads) | Generated mathematically per video — 0% third-party audio fingerprint match |
 | **Sound Design (SFX)** | **FFmpeg Procedural SFX** (filtered noise whoosh, `60Hz -> 30Hz` sub-bass impact drop, synth chime) | Unique waveform every render; normalized cleanly with `-af loudnorm=I=-14:LRA=7:tp=-1.5` |
 

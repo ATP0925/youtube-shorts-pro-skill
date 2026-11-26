@@ -79,7 +79,7 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "yt_category": "Science & Technology",
         "yt_category_id": "28",
         "playlist_name": "Space & Science Mysteries",
-        "voice": "en-US-AndrewMultilingualNeural",
+        "voice": "en-US-AndrewNeural",
         "accent": (0, 235, 255),
         "bg_rgb": (6, 10, 28),
         "badge": "COSMIC DISCOVERY",
@@ -115,7 +115,7 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "yt_category": "Entertainment",
         "yt_category_id": "24",
         "playlist_name": "Optical Illusions & Brain Games",
-        "voice": "en-US-AvaMultilingualNeural",
+        "voice": "en-US-AvaNeural",
         "accent": (255, 45, 160),
         "bg_rgb": (14, 12, 22),
         "badge": "OPTICAL CHALLENGE",
@@ -151,7 +151,7 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "yt_category": "Howto & Style",
         "yt_category_id": "26",
         "playlist_name": "Food Science & Culinary Secrets",
-        "voice": "en-US-EmmaMultilingualNeural",
+        "voice": "en-US-EmmaNeural",
         "accent": (255, 195, 0),
         "bg_rgb": (24, 14, 6),
         "badge": "FOOD SCIENCE",
@@ -184,7 +184,7 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "yt_category": "Education",
         "yt_category_id": "27",
         "playlist_name": "Human Body & Dark Psychology",
-        "voice": "en-US-BrianMultilingualNeural",
+        "voice": "en-US-BrianNeural",
         "accent": (0, 255, 155),
         "bg_rgb": (8, 20, 22),
         "badge": "HUMAN BIOLOGY",
@@ -256,7 +256,7 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "yt_category": "Education",
         "yt_category_id": "27",
         "playlist_name": "Weird History & World Mysteries",
-        "voice": "en-US-AndrewMultilingualNeural",
+        "voice": "en-US-AndrewNeural",
         "accent": (255, 140, 60),
         "bg_rgb": (24, 16, 12),
         "badge": "ANCIENT MYSTERY",
@@ -388,27 +388,48 @@ def fetch_openverse_cc0_images(query: str, count: int = 4) -> list[Image.Image]:
 # ── Edge-TTS Narration + Millisecond Word Timestamps ───────────────────
 
 async def _synthesize_edge_tts(text: str, voice: str, mp3_path: Path) -> list[dict[str, Any]]:
-    """Synthesize speech with Edge-TTS and extract phrase subtitle chunks from WordBoundary events."""
+    """Synthesize speech with Edge-TTS (or fallback voice/gTTS) and emit timed subtitle chunks."""
     import edge_tts
 
-    comm = edge_tts.Communicate(text, voice)
-    chunks: list[dict[str, Any]] = []
-    word_buf: list[dict[str, Any]] = []
     mp3_path.parent.mkdir(parents=True, exist_ok=True)
+    word_buf: list[dict[str, Any]] = []
+    candidates = [voice, "en-US-GuyNeural", "en-US-JennyNeural"]
+    synthesized = False
 
-    with open(mp3_path, "wb") as f:
-        async for msg in comm.stream():
-            mtype = msg.get("type")
-            if mtype == "audio":
-                f.write(msg["data"])
-            elif mtype == "WordBoundary":
-                start_s = msg["offset"] / 10_000_000.0
-                dur_s = max(0.12, msg["duration"] / 10_000_000.0)
-                wtxt = str(msg.get("text", "")).strip()
-                if wtxt:
-                    word_buf.append({"start": start_s, "end": start_s + dur_s, "text": wtxt})
+    for cand_voice in dict.fromkeys(candidates):
+        try:
+            comm = edge_tts.Communicate(text, cand_voice, rate="+6%", boundary="WordBoundary")
+            word_buf = []
+            with open(mp3_path, "wb") as f:
+                async for msg in comm.stream():
+                    mtype = msg.get("type")
+                    if mtype == "audio":
+                        f.write(msg["data"])
+                    elif mtype == "WordBoundary":
+                        start_s = msg["offset"] / 10_000_000.0
+                        dur_s = max(0.12, msg["duration"] / 10_000_000.0)
+                        wtxt = str(msg.get("text", "")).strip()
+                        if wtxt:
+                            word_buf.append({"start": start_s, "end": start_s + dur_s, "text": wtxt})
+            if mp3_path.exists() and mp3_path.stat().st_size > 1000:
+                synthesized = True
+                break
+        except Exception as exc:
+            log.warning("Edge-TTS failed for %s (%s); trying fallback...", cand_voice, exc)
+
+    if not synthesized:
+        from gtts import gTTS
+        gTTS(text, lang="en", tld="us").save(str(mp3_path))
+
+    if not word_buf:
+        dur_total = _probe_audio_duration(mp3_path)
+        words = text.split()
+        step = dur_total / max(1, len(words))
+        for idx, w in enumerate(words):
+            word_buf.append({"start": idx * step, "end": (idx + 1) * step, "text": w})
 
     # Group into punchy 2-3 word kinetic subtitle beats
+    chunks: list[dict[str, Any]] = []
     for i in range(0, len(word_buf), 3):
         grp = word_buf[i:i + 3]
         phrase = " ".join(w["text"] for w in grp).strip().upper()
