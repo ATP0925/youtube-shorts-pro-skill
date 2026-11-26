@@ -2,6 +2,18 @@
 
 All notable changes to `youtube-shorts-pro-skill` are documented here.
 
+## [3.0.0] — 2026-11-26
+
+### Added
+- **Viral Video Creation Knowledge** — 4 new comprehensive reference documents:
+  - `references/viral-hooks-retention.md` — Hook psychology (Cognitive Dissonance, Loss Aversion, Zeigarnik Effect, Identity Call-Out), multisensory hook execution, mid-video retention techniques, loop-back endings, hook templates for gaming channels, retention killers.
+  - `references/editing-tools-automation.md` — Full tool comparison (CapCut, FFmpeg, Remotion, DaVinci Resolve, After Effects), FFmpeg advanced filters (vertical conversion, speed ramp, Ken Burns zoom, overlays, ASS subtitles), Whisper AI transcription pipeline, pro ASS subtitle template, sound design layer (whoosh/impact/riser/blip/drop/silence), complete automated pipeline diagram, free SFX/music sources.
+  - `references/algorithm-signals.md` — YouTube Shorts algorithm (swipe-away rate, completion rate, loop rate, shares, saves, distribution tiers), Instagram Reels algorithm (DM shares as #1 signal), TikTok algorithm (interest-graph, semantic parsing), cross-platform signal comparison matrix, optimal duration by platform, anti-pattern list.
+  - `references/thumbnail-cover-optimization.md` — Cover frame design rules (3-word max, single focal point, safe zone placement), pixel-level margin specs, first frame alignment, gaming-specific cover strategies, color psychology, FFmpeg cover extraction commands, Instagram grid optimization, dual-safe cover design.
+
+### Changed
+- `SKILL.md` — v3.0.0 rewrite: expanded from 7-pillar to 10-pillar architecture, added viral video creation sections (hook types, editing techniques, algorithm targets, CPM targets, pipeline flow), 25 trigger keywords, full reference index table, editing tool selection guide.
+
 ## [2.0.0] — 2026-11-26
 
 ### Added
