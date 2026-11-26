@@ -14,6 +14,7 @@ multi-stage bio meters, space telemetry HUD, historical timelines, etc.).
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import datetime
 import io
@@ -87,10 +88,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "title": "The Black Hole That Eats One Sun Every Day! #Shorts",
         "script": (
             "Astronomers just spotted a black hole so hungry it swallows an entire sun every single day. "
-            "It sits twelve billion light years away, glowing five hundred trillion times brighter than our own sun. "
+            "It sits twelve billion light years away, glowing five hundred trillion times brighter than our sun. "
             "Its accretion disk spans seven light years wide, spinning superheated gas near light speed. "
-            "If this monster replaced our sun, our entire solar system would vanish inside its shadow in seconds. "
-            "And that tiny dot on the map proves how wild deep space really gets. Follow for the next cosmic mystery."
+            "If this monster replaced our sun, our solar system would vanish inside its shadow in seconds. "
+            "Follow for the next cosmic mystery."
         ),
         "media_source": {"type": "nasa", "query": "black hole nebula galaxy"},
         "stages": [
@@ -103,7 +104,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
             "black hole", "space facts", "astronomy shorts", "science mysteries",
             "universe facts", "nasa discovery", "cosmic wonders", "j0529", "astrophysics", "shorts",
         ],
-        "pinned_comment": "Do you think even bigger monsters are hiding past the observable universe? Drop your theory below!",
+        "pinned_comment": (
+            "Do you think even bigger monsters are hiding past the observable universe? "
+            "Drop your theory below!"
+        ),
     },
     {
         "id": "cf_02_optical_illusion_afterimage",
@@ -121,8 +125,8 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "script": (
             "Stare straight at the glowing white dot in the center right now and do not look away. "
             "In ten seconds, the bright neon ring around this frame will suddenly vanish into pure gray. "
-            "Keep your eyes locked on the center dot while your retinal cones adapt to the intense magenta and cyan glow. "
-            "Three, two, one, switch! Do you see golden yellow and deep blue on a completely grayscale frame? "
+            "Keep your eyes locked on the center dot while your retinal cones adapt to magenta and cyan. "
+            "Three, two, one, switch! Do you see golden yellow and deep blue on pure grayscale? "
             "Look away and the color disappears instantly. Double tap to test your eyes again right from..."
         ),
         "media_source": {"type": "procedural_illusion"},
@@ -136,7 +140,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
             "optical illusion", "brain trick", "visual illusion", "color afterimage",
             "perception test", "mind trick", "neuroscience", "psychology shorts", "shorts",
         ],
-        "pinned_comment": "Honest check — did the black and white frame flash phantom colors for 2 seconds? Yes or No below!",
+        "pinned_comment": (
+            "Honest check — did the black and white frame flash phantom colors for 2 seconds? "
+            "Yes or No below!"
+        ),
     },
     {
         "id": "cf_03_food_honey_3000years",
@@ -152,7 +159,7 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "hook_sub": "Found in Egyptian tombs — still 100% edible today",
         "title": "Why 3,000-Year-Old Honey Never Ever Spoils! #Shorts",
         "script": (
-            "Archaeologists opened three thousand year old Egyptian tombs and found jars of honey that were still completely edible. "
+            "Archaeologists opened three thousand year old Egyptian tombs and found honey still edible. "
             "Almost every other food rots within days, so why does pure honey survive millennia? "
             "First, bees dehydrate nectar down to under eighteen percent water, starving bacteria of moisture. "
             "Second, honey has an acidic pH around three point nine and slowly releases natural hydrogen peroxide. "
@@ -185,11 +192,11 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "hook_sub": "Minute-by-minute biological breakdown",
         "title": "What 72 Hours Without Sleep Does To Your Brain! #Shorts",
         "script": (
-            "Skip sleep for seventy two straight hours and your own brain starts eating its worn neural connections. "
-            "At twenty four hours, reaction speed drops to the level of legal intoxication and cortisol spikes hard. "
-            "By hour forty eight, your brain forces micro sleeps lasting three seconds while your eyes remain wide open. "
+            "Skip sleep for seventy two straight hours and your brain starts clearing worn neural connections. "
+            "At twenty four hours, reaction speed drops to legal intoxication and cortisol spikes hard. "
+            "By hour forty eight, your brain forces micro sleeps for three seconds with eyes wide open. "
             "At hour seventy two, vivid waking hallucinations kick in as memory and emotional control collapse. "
-            "Sleep is when your glymphatic system flushes toxic proteins out — save this before your next late night."
+            "Sleep is when your glymphatic system flushes toxic waste out — save this before your next late night."
         ),
         "media_source": {"type": "openverse", "query": "human brain neuron light"},
         "stages": [
@@ -202,7 +209,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
             "human body facts", "sleep deprivation", "neuroscience", "brain facts",
             "what happens if", "psychology facts", "health science", "biology shorts", "shorts",
         ],
-        "pinned_comment": "What is the longest streak you ever stayed awake (exams, gaming, or work)? Drop your hour count!",
+        "pinned_comment": (
+            "What is the longest streak you ever stayed awake (exams, gaming, or work)? "
+            "Drop your hour count!"
+        ),
     },
     {
         "id": "cf_05_tech_gps_einstein",
@@ -218,10 +228,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "hook_sub": "The Einstein physics trick running inside your phone",
         "title": "Why Phone GPS Breaks By 11km/Day Without Einstein! #Shorts",
         "script": (
-            "Your smartphone map looks effortless, yet without Albert Einstein your GPS location would drift off course by eleven kilometers every single day. "
-            "GPS satellites orbit twenty thousand kilometers up where Earth gravity is weaker, making their atomic clocks tick faster. "
+            "Your map app looks effortless, yet without Einstein your GPS would drift eleven kilometers daily. "
+            "GPS satellites orbit twenty thousand kilometers up where weaker Earth gravity speeds up clocks. "
             "Meanwhile their high orbital speed slows their clocks slightly in the opposite direction. "
-            "Combined, satellite time runs ahead by thirty eight microseconds every day — and engineers adjust every chip on earth for that exact drift. "
+            "Combined, satellite time jumps thirty eight microseconds daily — and every chip corrects it live. "
             "Every time you tap navigate, relativity saves your ride."
         ),
         "media_source": {"type": "procedural_gps"},
@@ -235,7 +245,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
             "tech facts", "how gps works", "einstein relativity", "smartphone secrets",
             "science technology", "physics in real life", "engineering", "tech shorts", "shorts",
         ],
-        "pinned_comment": "Did you know relativistic physics corrects your Uber & Google Maps every second? Rate this mind-blow 1-10!",
+        "pinned_comment": (
+            "Did you know relativistic physics corrects Google Maps every second? "
+            "Rate this mind-blow 1-10!"
+        ),
     },
     {
         "id": "cf_06_history_roman_concrete",
@@ -251,10 +264,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "hook_sub": "MIT cracked the self-healing recipe",
         "title": "Why 2,000-Year-Old Roman Concrete Heals Itself! #Shorts",
         "script": (
-            "Modern concrete cracks and crumbles in seawater within fifty years, yet ancient Roman harbors built two thousand years ago are still standing strong. "
-            "Scientists at MIT finally discovered the secret hidden inside tiny white specks baked into the stone. "
-            "Romans used hot mixing with quicklime and volcanic ash, locking reactive calcium pockets inside the wall. "
-            "Whenever ocean waves crack the structure, seawater wakes up that lime, instantly growing fresh crystals that seal the crack shut. "
+            "Modern concrete crumbles in seawater within fifty years, yet Roman harbors still stand strong. "
+            "Scientists at MIT finally discovered the secret hidden inside tiny white specks baked into stone. "
+            "Romans used hot mixing with quicklime and volcanic ash, locking reactive calcium pockets inside walls. "
+            "When waves crack a pier, seawater dissolves lime and grows crystals that seal the crack shut. "
             "Two millennia later, engineers are copying ancient Rome to fix our cities."
         ),
         "media_source": {"type": "openverse", "query": "ancient roman pantheon colosseum architecture"},
@@ -284,10 +297,10 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         "hook_sub": "90% of people pick the wrong option instantly",
         "title": "$1 Million Cash vs $0.01 Doubled 30 Days — Watch Math! #Shorts",
         "script": (
-            "Would you take one million dollars cash today, or a single penny that doubles every day for thirty days? "
-            "Halfway through on day fifteen, that penny is only worth one hundred sixty three dollars while the millionaire looks way ahead. "
-            "Even on day twenty one, you barely hit ten thousand dollars — and most people regret turning down the cash. "
-            "Watch what happens in the final week: day twenty eight crosses one point three million, and day thirty explodes past five point three six million! "
+            "Would you take one million dollars today, or one penny doubled every day for thirty days? "
+            "On day fifteen, that penny is only worth one hundred sixty three dollars while cash leads cleanly. "
+            "Even on day twenty one, you barely hit ten thousand dollars and doubt your choice. "
+            "Watch week four: day twenty eight beats one point three million, and day thirty hits five point three million! "
             "Compounding looks invisible until it overtakes everything."
         ),
         "media_source": {"type": "procedural_wealth"},
@@ -408,10 +421,11 @@ async def _synthesize_edge_tts(text: str, voice: str, mp3_path: Path) -> list[di
 
 
 def _probe_audio_duration(audio_path: Path) -> float:
-    res = subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path)],
-        capture_output=True, text=True,
-    )
+    cmd = [
+        "ffprobe", "-v", "error", "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path),
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True)
     try:
         return max(15.0, float((res.stdout or "25").strip()))
     except ValueError:
@@ -551,7 +565,10 @@ def _render_procedural_gps_frame(t: float, total: float) -> Image.Image:
 
     # Orbit rings + Earth
     draw.ellipse([cx - 320, cy - 320, cx + 320, cy + 320], outline=(60, 160, 255, 170), width=4)
-    draw.ellipse([cx - 115, cy - 115, cx + 115, cy + 115], fill=(25, 110, 210, 255), outline=(0, 240, 255, 255), width=4)
+    draw.ellipse(
+        [cx - 115, cy - 115, cx + 115, cy + 115],
+        fill=(25, 110, 210, 255), outline=(0, 240, 255, 255), width=4,
+    )
     draw.text((cx, cy), "EARTH", font=_font(34), fill=(255, 255, 255), anchor="mm")
 
     # Moving GPS Satellites
@@ -560,10 +577,14 @@ def _render_procedural_gps_frame(t: float, total: float) -> Image.Image:
         sx = cx + int(math.cos(ang) * 320)
         sy = cy + int(math.sin(ang) * 320)
         draw.line([(cx, cy), (sx, sy)], fill=(0, 235, 255, 120), width=3)
-        draw.rounded_rectangle([sx - 30, sy - 20, sx + 30, sy + 20], radius=8, fill=(255, 215, 0, 255), outline=(255, 255, 255, 255), width=2)
+        draw.rounded_rectangle(
+            [sx - 30, sy - 20, sx + 30, sy + 20],
+            radius=8, fill=(255, 215, 0, 255), outline=(255, 255, 255, 255), width=2,
+        )
 
     km_drift = min(11.4, (t / max(1.0, total)) * 13.5)
-    draw.text((cx, 415), f"UNCORRECTED GPS DRIFT: +{km_drift:.1f} KM / DAY", font=_font(34), fill=(255, 95, 95), anchor="mm")
+    drift_txt = f"UNCORRECTED GPS DRIFT: +{km_drift:.1f} KM / DAY"
+    draw.text((cx, 415), drift_txt, font=_font(34), fill=(255, 95, 95), anchor="mm")
     return canvas
 
 
@@ -620,7 +641,8 @@ def _build_photo_panel_frame(
         zoom = 1.04 + 0.16 * sub_prog
         pan = math.sin(s_idx * 1.7 + sub_prog * 2.0) * 0.45
 
-        bg = _fit_cover_zoom(im, SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT, zoom=1.1).filter(ImageFilter.GaussianBlur(26))
+        bg_fit = _fit_cover_zoom(im, SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT, zoom=1.1)
+        bg = bg_fit.filter(ImageFilter.GaussianBlur(26))
         dark = Image.new("RGBA", bg.size, (bg_rgb[0], bg_rgb[1], bg_rgb[2], 140))
         canvas = Image.alpha_composite(bg.convert("RGBA"), dark)
 
@@ -703,7 +725,10 @@ def build_topic_short(
 
     # Compile frames + Edge-TTS voice + 100% synthetic FFmpeg ambient pulse + -14 LUFS loudnorm
     ass_esc = str(ass_path.resolve()).replace("\\", "/").replace(":", "\\:")
-    ambient_expr = "aevalsrc='0.032*sin(2*PI*110*t)+0.022*sin(2*PI*165*t)+0.015*sin(2*PI*220*t)*sin(2*PI*0.25*t)':s=44100:c=stereo"
+    ambient_expr = (
+        "aevalsrc='0.032*sin(2*PI*110*t)+0.022*sin(2*PI*165*t)"
+        "+0.015*sin(2*PI*220*t)*sin(2*PI*0.25*t)':s=44100:c=stereo"
+    )
     fc = (
         f"[0:v]ass='{ass_esc}'[vout];"
         f"{ambient_expr},atrim=0:{dur_s},lowpass=f=480[bed];"
@@ -773,7 +798,9 @@ def build_all_global_shorts(out_dir: Path, catalog_path: Path, fps: int = 30) ->
 
 def main() -> None:
     """CLI entry point for building 100% copyright-free viral Shorts."""
-    parser = argparse.ArgumentParser(description="Build 100% copyright-free viral YouTube Shorts across global categories")
+    parser = argparse.ArgumentParser(
+        description="Build 100% copyright-free viral YouTube Shorts across global categories",
+    )
     parser.add_argument("--out-dir", default="queue/copyright_free", help="Output folder for rendered .mp4 Shorts")
     parser.add_argument("--catalog-out", default="queue/copyright_free_catalog.json", help="Destination catalog JSON")
     parser.add_argument("--topic", help="Build single topic ID only (optional)")

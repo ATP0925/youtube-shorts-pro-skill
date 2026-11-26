@@ -388,7 +388,8 @@ async def apply_full_video_metadata(
     """
     cfg = load_config()
     cat = category or cfg.get("default_category", "Gaming")
-    gtitle = game_title if game_title is not None else (cfg.get("default_game_title") if cat.lower() == "gaming" else None)
+    default_gt = cfg.get("default_game_title") if cat.lower() == "gaming" else None
+    gtitle = game_title if game_title is not None else default_gt
     lang = cfg.get("video_language", "English (United States)")
 
     changes: dict[str, bool] = {
