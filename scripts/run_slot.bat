@@ -2,12 +2,13 @@
 setlocal enabledelayedexpansion
 
 set ROOT=%~dp0..
+if defined YT_PRO_HOME set ROOT=%YT_PRO_HOME%
 cd /d "%ROOT%"
 
 set SLOT=%1
 if "%SLOT%"=="" set SLOT=auto
 
-if not exist logs mkdir logs
+if not exist "%ROOT%\logs" mkdir "%ROOT%\logs"
 set LOG_FILE=%ROOT%\logs\yt_shorts_publisher.log
 
 where python >nul 2>nul
