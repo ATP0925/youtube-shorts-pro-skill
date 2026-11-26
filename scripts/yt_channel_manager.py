@@ -209,6 +209,42 @@ async def _set_playlist_in_form(pg: Any, playlist_name: str | None) -> bool:
 
     changed = False
     row = dlg.get_by_text(playlist_name, exact=True).first
+    if await row.count() == 0:
+        # Auto-create missing playlist directly inside Studio's Playlist dialog
+        try:
+            new_btn = dlg.locator("button:has-text('New playlist'), ytcp-button:has-text('New playlist')").first
+            if await new_btn.count() > 0:
+                await new_btn.click()
+                await pg.wait_for_timeout(DROPDOWN_SETTLE_MS)
+                create_opt = pg.locator(
+                    "tp-yt-paper-item:visible:has-text('Create playlist'), "
+                    "tp-yt-paper-item:visible:has-text('New playlist')"
+                ).first
+                if await create_opt.count() > 0:
+                    await create_opt.click()
+                    await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
+                title_inp = pg.locator(
+                    "ytcp-playlist-creation-dialog #textbox[contenteditable='true'], "
+                    "ytcp-playlist-creation-dialog textarea, "
+                    "ytcp-playlist-creation-dialog input[type='text']"
+                ).first
+                if await title_inp.count() > 0:
+                    await title_inp.click()
+                    await pg.keyboard.insert_text(playlist_name)
+                    await pg.wait_for_timeout(SHORT_SETTLE_MS)
+                    cr_btn = pg.locator(
+                        "ytcp-playlist-creation-dialog #create-button button, "
+                        "ytcp-playlist-creation-dialog button:has-text('Create')"
+                    ).last
+                    if await cr_btn.count() > 0 and (await cr_btn.get_attribute("aria-disabled")) != "true":
+                        await cr_btn.click()
+                        await pg.wait_for_timeout(LONG_SETTLE_MS)
+                        log.info("Created new Playlist → '%s'", playlist_name)
+                        changed = True
+                row = dlg.get_by_text(playlist_name, exact=True).first
+        except Exception as exc:
+            log.debug("Playlist auto-create note (%s): %s", playlist_name, exc)
+
     if await row.count() > 0:
         already = await row.evaluate(
             """el => {
@@ -235,7 +271,9 @@ async def _set_playlist_in_form(pg: Any, playlist_name: str | None) -> bool:
         await done_b.click()
         await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
     try:
-        if await dlg.is_visible():
+        for _ in range(3):
+            if not await dlg.is_visible():
+                break
             await pg.keyboard.press("Escape")
             await pg.wait_for_timeout(MODAL_DISMISS_MS)
     except Exception:
@@ -256,6 +294,17 @@ async def _expand_show_more(pg: Any, scope_selector: str = "") -> bool:
     return False
 
 
+async def _dismiss_open_dropdown(pg: Any) -> None:
+    """Close any open paper dropdown / text-menu without dismissing the parent upload modal."""
+    try:
+        menu = pg.locator("tp-yt-iron-dropdown:visible, ytcp-text-menu:visible").first
+        if await menu.count() > 0:
+            await pg.keyboard.press("Escape")
+            await pg.wait_for_timeout(MODAL_DISMISS_MS)
+    except Exception:
+        pass
+
+
 async def _ensure_gaming_and_us_language(
     pg: Any,
     scope_selector: str = "",
@@ -269,27 +318,32 @@ async def _ensure_gaming_and_us_language(
     try:
         cat_trig = pg.locator(f"{prefix}{S.CATEGORY_TRIGGER}").first
         if await cat_trig.count() > 0:
+            await cat_trig.scroll_into_view_if_needed()
             cat_txt = (await cat_trig.inner_text()).strip()
             if category_name.lower() not in cat_txt.lower():
                 await _click_center(pg, cat_trig)
                 await pg.wait_for_timeout(DROPDOWN_SETTLE_MS)
-                opt = pg.locator(f"tp-yt-paper-item:visible:has-text('{category_name}')").first
+                opt = pg.locator(f"tp-yt-paper-item:has-text('{category_name}')").first
                 if await opt.count() > 0:
+                    await opt.scroll_into_view_if_needed()
                     await opt.click()
                     await pg.wait_for_timeout(SCROLL_SETTLE_MS)
                     log.info("Set Category → %s", category_name)
                     changed = True
+                else:
+                    await _dismiss_open_dropdown(pg)
 
         for lang_label in ("Video language", "Title and description language"):
             ltrig = pg.locator(f"{prefix}{S.LANG_DROPDOWN_TEMPLATE.format(label=lang_label)}").first
             if await ltrig.count() > 0:
+                await ltrig.scroll_into_view_if_needed()
                 ltxt = (await ltrig.inner_text()).strip()
                 if base_lang.lower() not in ltxt.lower():
                     await _click_center(pg, ltrig)
                     await pg.wait_for_timeout(DROPDOWN_SETTLE_MS)
-                    eopt = pg.locator(f"tp-yt-paper-item:visible:has-text('{target_lang}')").first
+                    eopt = pg.locator(f"tp-yt-paper-item:has-text('{target_lang}')").first
                     if await eopt.count() == 0:
-                        eopt = pg.locator(f"tp-yt-paper-item:visible:text-is('{base_lang}')").first
+                        eopt = pg.locator(f"tp-yt-paper-item:text-is('{base_lang}')").first
                     if await eopt.count() > 0:
                         await eopt.scroll_into_view_if_needed()
                         await eopt.click()
@@ -297,9 +351,11 @@ async def _ensure_gaming_and_us_language(
                         log.info("Set %s → %s", lang_label, target_lang)
                         changed = True
                     else:
-                        await pg.keyboard.press("Escape")
+                        await _dismiss_open_dropdown(pg)
     except Exception as exc:
         log.debug("Category/Language check note: %s", exc)
+        await _dismiss_open_dropdown(pg)
+    await _dismiss_open_dropdown(pg)
     return changed
 
 

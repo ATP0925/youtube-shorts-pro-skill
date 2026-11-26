@@ -216,6 +216,14 @@ async def _upload_short_on_page(
     except Exception:
         pass
 
+    # Dismiss any stray open dropdown menu/backdrop before advancing wizard steps
+    for _ in range(3):
+        menu = pg.locator("tp-yt-iron-dropdown:visible, ytcp-text-menu:visible, ytcp-playlist-dialog:visible").first
+        if await menu.count() == 0:
+            break
+        await pg.keyboard.press("Escape")
+        await pg.wait_for_timeout(MEDIUM_SETTLE_MS)
+
     # Navigate through dialog steps
     for step_name in ("Details → Elements", "Elements → Checks", "Checks → Visibility"):
         next_btn = pg.locator(S.NEXT_BUTTON).first
