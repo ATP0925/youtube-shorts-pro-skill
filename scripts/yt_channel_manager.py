@@ -379,15 +379,16 @@ async def apply_full_video_metadata(
     game_title: str | None = None,
     altered_content: bool = False,
     scope_selector: str = "",
+    category: str | None = None,
 ) -> dict[str, bool]:
-    """Apply Playlist, Altered Content, Category/Language, Tags & Game Title.
+    """Apply Playlist, Altered Content, Category/Language, Tags & optional Game Title.
 
     Returns:
         Dict of field names to whether they were changed.
     """
     cfg = load_config()
-    gtitle = game_title if game_title is not None else cfg.get("default_game_title")
-    cat = cfg.get("default_category", "Gaming")
+    cat = category or cfg.get("default_category", "Gaming")
+    gtitle = game_title if game_title is not None else (cfg.get("default_game_title") if cat.lower() == "gaming" else None)
     lang = cfg.get("video_language", "English (United States)")
 
     changes: dict[str, bool] = {
@@ -406,7 +407,7 @@ async def apply_full_video_metadata(
     changes["cat_lang"] = await _ensure_gaming_and_us_language(
         pg, scope_selector=scope_selector, category_name=cat, target_lang=lang,
     )
-    if gtitle:
+    if gtitle and cat.lower() == "gaming":
         changes["game_title"] = await _set_game_title(pg, gtitle, scope_selector=scope_selector)
     return changes
 
@@ -736,8 +737,9 @@ async def backfill_live_shorts(
                     pg,
                     tags=yt.get("tags", []),
                     playlist_name=yt.get("playlist_name"),
-                    game_title=yt.get("game_title", cfg.get("default_game_title")),
+                    game_title=yt.get("game_title"),
                     altered_content=bool(yt.get("altered_content", False)),
+                    category=yt.get("category"),
                 )
                 saved = await _wait_button_commit(pg, pg.locator(S.SAVE_BUTTON).first, f"EDIT_{vid}")
                 c_res = await post_and_pin_comment(pg, vid, yt.get("pinned_comment", ""))

@@ -2,6 +2,16 @@
 
 All notable changes to `youtube-shorts-pro-skill` are documented here.
 
+## [3.2.0] — 2026-11-26
+
+### Added
+- `scripts/copyright_free_shorts_factory.py` — Multi-category 100% copyright-free Shorts generator covering 7 top global viral niches (`Space & Science`, `Optical Illusions`, `Food Science`, `Human Body & Psychology`, `Tech & AI`, `Weird History`, `Wealth Math`) using `edge-tts` WordBoundary sync, procedural 60FPS animations, NASA PD / Openverse CC0 visuals, and FFmpeg synthesized audio (-14 LUFS).
+- `references/copyright-free-monetization-niches.md` — Global high-view copyright-free niche architecture & YPP 2025/2026 Inauthentic Content compliance guide.
+
+### Changed
+- Made `media_loudness_validator.py`, `yt_channel_manager.py`, `yt_studio_shorts_uploader.py`, and `youtube_shorts_daily_pipeline.py` strictly **multi-niche capable**: per-video YouTube Studio `category` overrides work across `Science & Technology`, `Education`, `Entertainment`, `Howto & Style`, and `Gaming`, and `game_title` is only required/applied for `Gaming`.
+- Added `edge-tts>=6.1.0` to `requirements.txt` and `pyproject.toml`.
+
 ## [3.1.0] — 2026-11-26
 
 ### Added

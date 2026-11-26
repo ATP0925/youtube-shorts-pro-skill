@@ -1,13 +1,14 @@
 [project]
 name = "youtube-shorts-pro-skill"
-version = "3.1.0"
-description = "Portable YouTube Shorts & Gaming channel operating system via Chrome CDP"
+version = "3.2.0"
+description = "Portable Multi-Niche Copyright-Free & Gaming YouTube Shorts Engine via Chrome CDP"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
     "playwright>=1.40",
     "Pillow>=10.0",
+    "edge-tts>=6.1.0",
 ]
 
 [tool.ruff]
@@ -35,4 +36,5 @@ known-first-party = [
     "ig_reels_publisher",
     "viral_hook_analyzer",
     "auto_subtitle_styler",
+    "copyright_free_shorts_factory",
 ]

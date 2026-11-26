@@ -128,6 +128,7 @@ async def _upload_short_on_page(
     game_title: str | None = None,
     altered_content: bool = False,
     pinned_comment: str | None = None,
+    category: str | None = None,
 ) -> dict[str, Any]:
     """Execute the full upload flow on a Studio page.
 
@@ -200,6 +201,7 @@ async def _upload_short_on_page(
         game_title=game_title,
         altered_content=altered_content,
         scope_selector=S.UPLOADS_DIALOG,
+        category=category,
     )
 
     # Extract video ID
@@ -302,6 +304,7 @@ async def upload_youtube_short(
     game_title: str | None = None,
     altered_content: bool = False,
     pinned_comment: str | None = None,
+    category: str | None = None,
 ) -> dict[str, Any]:
     """Upload a YouTube Short with complete pro metadata.
 
@@ -353,6 +356,7 @@ async def upload_youtube_short(
                     game_title=game_title,
                     altered_content=altered_content,
                     pinned_comment=pinned_comment,
+                    category=category,
                 )
             finally:
                 try:

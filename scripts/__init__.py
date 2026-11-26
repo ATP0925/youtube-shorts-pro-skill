@@ -14,6 +14,7 @@ Public modules:
   ig_reels_publisher         — Instagram Reels CDP publisher
   viral_hook_analyzer        — FFmpeg viral readiness, hook & pacing scorer
   auto_subtitle_styler       — Kinetic ASS caption generator & -14 LUFS renderer
+  copyright_free_shorts_factory — 100% copyright-free global multi-category Shorts generator
 """
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "ig_reels_publisher",
     "viral_hook_analyzer",
     "auto_subtitle_styler",
+    "copyright_free_shorts_factory",
 ]

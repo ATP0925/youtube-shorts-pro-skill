@@ -176,9 +176,10 @@ def run_yt_slot(
                 channel_id=ch_id,
                 visibility="Public",
                 playlist_name=yt.get("playlist_name"),
-                game_title=yt.get("game_title", cfg.get("default_game_title")),
+                game_title=yt.get("game_title"),
                 altered_content=bool(yt.get("altered_content", False)),
                 pinned_comment=yt.get("pinned_comment"),
+                category=yt.get("category"),
             )
         )
         log.info("[UPLOAD] %s — %s", "SUCCESS" if res.get("success") else "FAILED", res.get("message", ""))

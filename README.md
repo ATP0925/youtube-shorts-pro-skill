@@ -51,6 +51,7 @@ youtube-shorts-pro-skill/
 │   ├── viral-hooks-retention.md          # Hook psychology, retention loops & CPM targets
 │   ├── editing-tools-automation.md       # FFmpeg, Whisper, CapCut, Remotion & SFX pipeline
 │   ├── algorithm-signals.md              # YT Shorts / IG Reels / TikTok ranking signals
+│   ├── copyright-free-monetization-niches.md # Global copyright-free niches & YPP rules
 │   ├── thumbnail-cover-optimization.md   # Safe zones, 3-word rule & cover extraction
 │   ├── 7-pillars-playbook.md             # Complete creator operations checklist
 │   ├── high-rpm-usa-monetization.md      # RPM/CPM strategy & YPP milestones
@@ -66,6 +67,7 @@ youtube-shorts-pro-skill/
     ├── build_channel_branding.py         # Avatar, Banner, Watermark & Shorts Cover generator
     ├── viral_hook_analyzer.py            # FFmpeg hook energy, blackframe & pacing scorer
     ├── auto_subtitle_styler.py           # Kinetic ASS subtitle styler & -14 LUFS renderer
+    ├── copyright_free_shorts_factory.py  # 100% copyright-free global 7-category Shorts builder
     ├── media_loudness_validator.py       # FFprobe + FFmpeg audio/video & viral validator
     ├── yt_channel_manager.py             # Studio channel ops via CDP
     ├── yt_studio_shorts_uploader.py      # Full-metadata upload engine

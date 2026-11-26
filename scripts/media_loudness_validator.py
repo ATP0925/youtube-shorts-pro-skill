@@ -225,7 +225,9 @@ def verify_catalog_items(
             viral_suffix = f" │ viral={vrep['grade']}({vrep['score']})"
 
         title_ok = len(title) <= MAX_TITLE_LENGTH and REQUIRED_HASHTAG in title
-        meta_ok = bool(yt.get("game_title") and yt.get("playlist_name") and yt.get("pinned_comment"))
+        is_gaming = (yt.get("category_id") == "20") or (str(yt.get("category", "")).lower() == "gaming")
+        need_game = bool(yt.get("game_title")) if is_gaming else True
+        meta_ok = bool(need_game and yt.get("playlist_name") and yt.get("pinned_comment"))
         ok = pr["is_9_16"] and pr["under_60s"] and pr["has_audio"] and loud_ok and title_ok and meta_ok
 
         if ok:

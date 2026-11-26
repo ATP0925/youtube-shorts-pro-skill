@@ -55,6 +55,7 @@ jobs:
               "ig_reels_publisher",
               "viral_hook_analyzer",
               "auto_subtitle_styler",
+              "copyright_free_shorts_factory",
           ]:
               __import__(mod)
 
@@ -63,6 +64,7 @@ jobs:
               "editing-tools-automation.md",
               "algorithm-signals.md",
               "thumbnail-cover-optimization.md",
+              "copyright-free-monetization-niches.md",
               "7-pillars-playbook.md",
           ]:
               assert (Path("references") / ref_file).exists(), f"Missing reference: {ref_file}"

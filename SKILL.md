@@ -1,11 +1,10 @@
 ---
 name: youtube-shorts-pro-skill
 description: >-
-  Use when setting up, optimizing, auditing, or automating a YouTube Shorts
-  or high-RPM US-audience gaming channel — including viral video creation,
-  editing techniques, hook psychology, algorithm optimization, Studio CDP uploads,
-  branding assets, media validation, analytics scraping, comment management,
-  EST/PST scheduling, and optional Instagram Reels cross-posting.
+  Use when creating, editing, optimizing, or automating copyright-free viral
+  YouTube Shorts across top global categories (Science, Illusions, Psychology,
+  Food, Tech, History, Wealth Math, Gaming) — with Neural TTS, ASS captions,
+  Studio CDP uploads, branding, validation, analytics, and EST/PST scheduling.
 metadata:
   category: automation
   triggers:
@@ -35,7 +34,7 @@ metadata:
     - whisper transcription
     - gaming clip editing
   author: ATP0925
-  version: "3.1.0"
+  version: "3.2.0"
 ---
 
 # YouTube Shorts Pro Skill
@@ -61,8 +60,8 @@ Complete AI-agent operating system for **creating, editing, optimizing, and auto
 | # | Pillar | Reference / Script |
 |---|--------|--------------------|
 | 1 | **Viral Hook Psychology** | `viral_hook_analyzer.py`, [viral-hooks-retention.md](references/viral-hooks-retention.md) |
-| 2 | **Editing & Automation Pipeline** | `auto_subtitle_styler.py`, [editing-tools-automation.md](references/editing-tools-automation.md) |
-| 3 | **Platform Algorithm Signals** | [references/algorithm-signals.md](references/algorithm-signals.md) |
+| 2 | **Editing & Automation Pipeline** | `auto_subtitle_styler.py`, `copyright_free_shorts_factory.py`, [editing-tools-automation.md](references/editing-tools-automation.md) |
+| 3 | **Platform Algorithm Signals** | [algorithm-signals.md](references/algorithm-signals.md), [copyright-free-monetization-niches.md](references/copyright-free-monetization-niches.md) |
 | 4 | **Thumbnail & Cover Optimization** | `build_channel_branding.py --cover-input`, [thumbnail-cover-optimization.md](references/thumbnail-cover-optimization.md) |
 | 5 | Eligibility & Legal AdSense | `yt_channel_manager.py`, [7-pillars-playbook.md](references/7-pillars-playbook.md) |
 | 6 | Pro Storefront (Banner/Avatar/Watermark) | `build_channel_branding.py`, `yt_channel_manager.py` |
@@ -144,6 +143,7 @@ cp examples/config.example.json config.json        # Configure
 python scripts/build_channel_branding.py --title "CHANNEL NAME"  # Brand
 python scripts/build_channel_branding.py --cover-input frame.jpg --cover-text "FASTEST CAR" --cover-out cover.png
 python scripts/viral_hook_analyzer.py --catalog queue/catalog.json  # Viral Score
+python scripts/copyright_free_shorts_factory.py --out-dir queue/cf --catalog-out queue/cf_catalog.json  # Generate 7 Copyright-Free Shorts
 python scripts/auto_subtitle_styler.py --whisper-json subs.json --render-input raw.mp4 --render-output out.mp4
 python scripts/youtube_shorts_daily_pipeline.py --verify --viral-check  # Validate
 python scripts/youtube_shorts_daily_pipeline.py --optimize-live   # Setup Studio
@@ -219,6 +219,7 @@ See [references/troubleshooting.md](references/troubleshooting.md) for solutions
 | [viral-hooks-retention.md](references/viral-hooks-retention.md) | Hook psychology, retention loops, pattern interrupts, hook templates |
 | [editing-tools-automation.md](references/editing-tools-automation.md) | FFmpeg, Whisper, CapCut, Remotion, ASS styling, sound design, pipeline |
 | [algorithm-signals.md](references/algorithm-signals.md) | YT Shorts / IG Reels / TikTok algorithm signals, distribution tiers |
+| [copyright-free-monetization-niches.md](references/copyright-free-monetization-niches.md) | Top global copyright-free niches, PD/CC0 stack, YPP Inauthentic Content compliance |
 | [thumbnail-cover-optimization.md](references/thumbnail-cover-optimization.md) | Cover frame design, safe zones, text overlay, gaming strategies |
 | [7-pillars-playbook.md](references/7-pillars-playbook.md) | Channel operations checklist (eligibility, storefront, metadata) |
 | [high-rpm-usa-monetization.md](references/high-rpm-usa-monetization.md) | RPM benchmarks, YPP tiers, Form W-8BEN |
