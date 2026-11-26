@@ -319,6 +319,239 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
         ],
         "pinned_comment": "Be honest — before seeing Day 28, would you have grabbed the $1,000,000 cash immediately?",
     },
+    {
+        "id": "cf_08_space_neutron_star",
+        "category_key": "space_science",
+        "yt_category": "Science & Technology",
+        "yt_category_id": "28",
+        "playlist_name": "Space & Science Mysteries",
+        "voice": "en-US-AndrewNeural",
+        "accent": (0, 212, 255),
+        "bg_rgb": (6, 12, 34),
+        "badge": "COSMIC DENSITY",
+        "hook_title": "A SINGLE TEASPOON WEIGHS 1 BILLION TONS",
+        "hook_sub": "What happens when a massive star crushes atoms flat",
+        "title": "1 Teaspoon Of Neutron Star Weighs 1 Billion Tons! #Shorts",
+        "script": (
+            "If you scooped one single teaspoon from a neutron star, it would weigh one billion tons on Earth. "
+            "That equals crushing every human building on the entire planet down into a sugar cube. "
+            "When a giant star explodes as a supernova, gravity slams protons and electrons into solid neutrons. "
+            "Nothing left is empty space, yet the whole star spins over six hundred times per second. "
+            "Would you dare step near one? Subscribe for daily cosmic extremes."
+        ),
+        "media_source": {"type": "nasa", "query": "crab nebula pulsar supernova remnant"},
+        "stages": [
+            ("ATOMS = 99.9% EMPTY", "Gravity crushes electron shells flat"),
+            ("1 SPOON = 1B TONS", "Heavier than Mount Everest in one spoon"),
+            ("600+ SPINS / SEC", "Lighthouse beams sweep across galaxies"),
+            ("20 KM WIDE STAR", "Holds 2x our Sun's mass inside one city"),
+        ],
+        "tags": [
+            "neutron star", "space facts", "nasa supernova", "astrophysics",
+            "cosmic density", "universe extremes", "science shorts", "shorts",
+        ],
+        "pinned_comment": (
+            "Can you imagine a whole star squeezed smaller than Mumbai or New York? Drop your thoughts below!"
+        ),
+    },
+    {
+        "id": "cf_09_illusion_spiral_aftereffect",
+        "category_key": "optical_illusion",
+        "yt_category": "Entertainment",
+        "yt_category_id": "24",
+        "playlist_name": "Optical Illusions & Brain Games",
+        "voice": "en-US-AvaNeural",
+        "accent": (255, 45, 160),
+        "bg_rgb": (14, 12, 22),
+        "badge": "MOTION ILLUSION",
+        "hook_title": "STARE AT THE CENTER SPIRAL — WATCH WALLS MELT",
+        "hook_sub": "Motion sensors in your visual cortex fatigue in 15s",
+        "title": "Stare 15 Seconds - Watch Your Room Bend Live! #Shorts",
+        "script": (
+            "Lock your eyes onto the bright dot inside this spinning spiral and do not blink away. "
+            "Motion detector neurons tuned to inward spin are firing non stop right now. "
+            "Keep staring until the spiral freezes onto a completely still geometric pattern. "
+            "Ready, stop! Now look at the static wall beside your screen — do the lines breathe outward? "
+            "Tap replay to bend reality again."
+        ),
+        "media_source": {"type": "procedural_spiral"},
+        "stages": [
+            ("FOCUS ON CENTER", "Keep both eyes locked on the white dot"),
+            ("NEURON FATIGUE", "Inward motion receptors overloading now"),
+            ("HOLD STEADY...", "Static reveal coming in final seconds"),
+            ("STATIC FREEZE!", "Look around your room - watch it warp!"),
+        ],
+        "tags": [
+            "spiral illusion", "optical illusion", "motion aftereffect", "brain trick",
+            "neuroscience", "hallucination test", "psychology shorts", "shorts",
+        ],
+        "pinned_comment": "Honest test — did your room or hand look like it melted for 3 seconds? Yes or No!",
+    },
+    {
+        "id": "cf_10_food_banana_potassium",
+        "category_key": "food_science",
+        "yt_category": "Howto & Style",
+        "yt_category_id": "26",
+        "playlist_name": "Food Science & Culinary Secrets",
+        "voice": "en-US-EmmaNeural",
+        "accent": (255, 195, 0),
+        "bg_rgb": (24, 14, 6),
+        "badge": "FOOD PHYSICS",
+        "hook_title": "WHY BANANAS ARE NATURALLY RADIOACTIVE",
+        "hook_sub": "Scientists measure real nuclear doses using bananas",
+        "title": "Why Bananas Are Actually Radioactive (Truth)! #Shorts",
+        "script": (
+            "Every yellow banana sitting in your kitchen is mildly radioactive right this second. "
+            "Bananas are rich in potassium, and a tiny fraction is the radioactive isotope potassium forty. "
+            "It decays slowly enough that bananas even emit single antimatter positrons every seventy five minutes. "
+            "Don't panic though — you would need ten million bananas at once to get radiation poisoning. "
+            "Your body flushes the extra instantly, leaving pure safe energy."
+        ),
+        "media_source": {"type": "openverse", "query": "ripe yellow bananas fruit"},
+        "stages": [
+            ("POTASSIUM-40", "Natural isotope inside healthy foods"),
+            ("POSITRON DECAY", "Emits real antimatter every 75 mins"),
+            ("0.1 MICRO-SV", "Official Banana Equivalent Dose scale"),
+            ("10M AT ONCE?", "Completely harmless — body auto-balances"),
+        ],
+        "tags": [
+            "food science", "banana facts", "radioactive banana", "physics in food",
+            "nutrition science", "weird food facts", "kitchen science", "shorts",
+        ],
+        "pinned_comment": "How many bananas do you eat in a week now that you know this science fact?",
+    },
+    {
+        "id": "cf_11_body_stomach_acid",
+        "category_key": "psychology_body",
+        "yt_category": "Education",
+        "yt_category_id": "27",
+        "playlist_name": "Human Body & Dark Psychology",
+        "voice": "en-US-BrianNeural",
+        "accent": (0, 255, 155),
+        "bg_rgb": (8, 20, 22),
+        "badge": "HUMAN BIOLOGY",
+        "hook_title": "HOW STOMACH ACID MELTS METAL BUT NOT YOU",
+        "hook_sub": "pH 1.5 hydrochloric acid lives millimeters inside you",
+        "title": "How Stomach Acid Melts Metal But Not You! #Shorts",
+        "script": (
+            "Inside your stomach right now sits hydrochloric acid rated between pH one point five and two. "
+            "In lab tests, that exact acid slowly corrodes thin stainless steel razor blades. "
+            "So why doesn't your stomach digest itself from the inside out overnight? "
+            "Specialized mucosal cells secrete alkaline bicarbonate gel and replace your inner lining every four days. "
+            "Your body wages an invisible chemical truce every single heartbeat."
+        ),
+        "media_source": {"type": "procedural_stomach_acid"},
+        "stages": [
+            ("pH 1.5 ACID", "Kills pathogens and dissolves minerals"),
+            ("CORROSIVE LAB", "Matches diluted battery runoff strength"),
+            ("MUCUS SHIELD", "Bicarbonate gel neutralizes edge wall"),
+            ("REBUILDS IN 4 DAYS", "Fastest renewing lining in your body"),
+        ],
+        "tags": [
+            "human body facts", "stomach acid", "biology shorts", "anatomy secrets",
+            "science explained", "medical facts", "how body works", "shorts",
+        ],
+        "pinned_comment": "Which human body survival superpower surprises you most? Comment below!",
+    },
+    {
+        "id": "cf_12_tech_ocean_cables",
+        "category_key": "tech_ai",
+        "yt_category": "Science & Technology",
+        "yt_category_id": "28",
+        "playlist_name": "AI, Tech & Hidden Secrets",
+        "voice": "en-US-ChristopherNeural",
+        "accent": (75, 175, 255),
+        "bg_rgb": (6, 14, 30),
+        "badge": "HIDDEN TECH",
+        "hook_title": "99% OF THE INTERNET RUNS UNDER THE OCEAN",
+        "hook_sub": "Not satellites — hairline glass threads carry global data",
+        "title": "99% Of The Internet Runs Under Ocean Cables! #Shorts",
+        "script": (
+            "Most people picture satellites beaming YouTube videos through space, yet that handles under one percent. "
+            "Ninety nine percent of global internet traffic races through fiber optic cables buried under the sea. "
+            "Over five hundred fifty undersea lines stretch one point four million kilometers across trenches. "
+            "Each glass strand no thicker than human hair pulses terabits via laser light every second. "
+            "Deep beneath crashing waves lies civilization's true nervous system."
+        ),
+        "media_source": {"type": "procedural_subsea_cables"},
+        "stages": [
+            ("< 1% SATELLITES", "Used mostly for remote ships & planes"),
+            ("550+ SEA CABLES", "Stretch 1.4 million km on ocean floor"),
+            ("HAIR-THIN GLASS", "Pulses global video at near light speed"),
+            ("99% TRAFFIC LOAD", "Powers banking, cloud AI & this video"),
+        ],
+        "tags": [
+            "internet facts", "submarine cables", "tech explained", "fiber optic",
+            "engineering shorts", "global network", "science technology", "shorts",
+        ],
+        "pinned_comment": "Did you think satellites carried most of your internet before seeing this? Yes or No!",
+    },
+    {
+        "id": "cf_13_history_cleopatra_timeline",
+        "category_key": "weird_history",
+        "yt_category": "Education",
+        "yt_category_id": "27",
+        "playlist_name": "Weird History & World Mysteries",
+        "voice": "en-US-AndrewNeural",
+        "accent": (255, 140, 60),
+        "bg_rgb": (24, 16, 12),
+        "badge": "HISTORY WARP",
+        "hook_title": "CLEOPATRA WAS CLOSER TO IPHONE THAN PYRAMIDS",
+        "hook_sub": "Ancient Egypt spanned longer than modern history",
+        "title": "Cleopatra Lived Closer To iPhone Than Pyramids! #Shorts",
+        "script": (
+            "Cleopatra feels like ancient history beside the pyramids, yet the timeline math shocks everyone. "
+            "The Great Pyramid of Giza finished around twenty five sixty BCE under Pharaoh Khufu. "
+            "Cleopatra ruled Alexandria more than two thousand five hundred years later in thirty BCE. "
+            "That means fewer years separate Cleopatra from the first iPhone launch than from Giza's stones. "
+            "History isn't one chapter — ancient pyramids were already ancient to Cleopatra."
+        ),
+        "media_source": {"type": "procedural_cleopatra_timeline"},
+        "stages": [
+            ("2560 BCE: GIZA", "Great Pyramid completed under Khufu"),
+            ("2,530 YRS PASS", "Already ancient ruins in Cleopatra's era"),
+            ("30 BCE: CLEOPATRA", "Last Pharaoh lived near Roman apex"),
+            ("2,037 YRS LATER", "2007 CE iPhone is closer in time to her!"),
+        ],
+        "tags": [
+            "weird history", "cleopatra facts", "ancient egypt", "time perspective",
+            "history mind blow", "pyramids of giza", "historical timeline", "shorts",
+        ],
+        "pinned_comment": "What two historical events being closer together than expected blew your mind?",
+    },
+    {
+        "id": "cf_14_wealth_rule_of_72",
+        "category_key": "wealth_math",
+        "yt_category": "Education",
+        "yt_category_id": "27",
+        "playlist_name": "Wealth Math & Money Paradoxes",
+        "voice": "en-US-GuyNeural",
+        "accent": (50, 235, 120),
+        "bg_rgb": (6, 22, 14),
+        "badge": "WEALTH MATH",
+        "hook_title": "THE 2-SECOND RULE OF 72 MILLIONAIRE FORMULA",
+        "hook_sub": "Know exact years to double any investment in your head",
+        "title": "Rule Of 72: Know When Your Money Doubles Fast! #Shorts",
+        "script": (
+            "Wall Street bankers don't need spreadsheets to know when cash doubles — they use the Rule of seventy two. "
+            "Simply divide seventy two by your annual return percentage for exact doubling time. "
+            "At tiny two percent bank savings, your money crawls and takes thirty six full years to double. "
+            "Jump to twelve percent index compounding and it doubles every six years instead of waiting decades. "
+            "Save this mental math shortcut before your next paycheck."
+        ),
+        "media_source": {"type": "procedural_rule_72"},
+        "stages": [
+            ("2% BANK -> 36 YRS", "Inflation often beats idle cash returns"),
+            ("6% BOND -> 12 YRS", "Moderate growth cuts wait time 3x"),
+            ("10% INDEX -> 7.2 YRS", "Long-term S&P average pace benchmark"),
+            ("72 / RATE = YEARS", "Memorize once — calculate wealth anywhere"),
+        ],
+        "tags": [
+            "rule of 72", "money math", "compound interest", "investing basics",
+            "wealth formula", "financial literacy", "finance shorts", "shorts",
+        ],
+        "pinned_comment": "Do you keep extra cash in 3% savings or compounding assets? Let's discuss below!",
+    },
 ]
 
 
@@ -846,6 +1079,217 @@ def _render_procedural_roman_frame(t: float, total: float) -> Image.Image:
     return canvas
 
 
+def _render_procedural_spiral_frame(t: float, total: float) -> Image.Image:
+    """Render rotating inward spiral (0..72%) snapping to static geometric grid (72..100%)."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (14, 12, 22, 255))
+    draw = ImageDraw.Draw(canvas)
+    prog = t / max(1.0, total)
+    cx, cy = 540, 785
+    reveal_at = 0.72
+
+    if prog < reveal_at:
+        spin = t * 5.2
+        arms = 6
+        for arm in range(arms):
+            base_a = (arm * 2 * math.pi / arms) - spin
+            pts: list[tuple[int, int]] = []
+            for step in range(4, 96):
+                r = step * 3.5
+                ang = base_a + step * 0.16
+                pts.append((cx + int(math.cos(ang) * r), cy + int(math.sin(ang) * r)))
+            col = (255, 45, 160, 245) if arm % 2 == 0 else (0, 235, 220, 245)
+            if len(pts) >= 2:
+                draw.line(pts, fill=col, width=16)
+        rem = max(1, int(math.ceil((reveal_at * total) - t)))
+        draw.text((cx, 418), f"FOCUS ON DOT: {rem}s LEFT", font=_font(34), fill=(255, 255, 255), anchor="mm")
+    else:
+        for r in range(70, 355, 55):
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(210, 210, 215, 230), width=14)
+        for gx in range(220, 861, 80):
+            draw.line([(gx, 465), (gx, 1105)], fill=(140, 140, 145, 160), width=4)
+        for gy in range(465, 1106, 80):
+            draw.line([(220, gy), (860, gy)], fill=(140, 140, 145, 160), width=4)
+        draw.text((cx, 418), "STATIC IMAGE! DOES YOUR SCREEN WARP?!", font=_font(32), fill=(255, 215, 0), anchor="mm")
+
+    draw.ellipse([cx - 18, cy - 18, cx + 18, cy + 18], fill=(255, 255, 255, 255), outline=(0, 0, 0, 255), width=4)
+    return canvas
+
+
+def _render_procedural_stomach_acid_frame(t: float, total: float) -> Image.Image:
+    """Render animated pH 1.5 stomach acid beaker + bicarbonate mucus lining shield."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (8, 20, 22, 255))
+    draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (18, 65, 65, 95))
+    prog = min(1.0, t / max(1.0, total))
+
+    # Acid vessel (X=210..870, Y=505..1075)
+    vx0, vy0, vx1, vy1 = 210, 505, 870, 1075
+    draw.rounded_rectangle([vx0, vy0, vx1, vy1], radius=34, fill=(10, 28, 24, 235), outline=(0, 255, 155, 220), width=5)
+
+    # Mucosal bicarbonate shield band lining vessel wall
+    draw.rounded_rectangle(
+        [vx0 + 14, vy0 + 14, vx1 - 14, vy1 - 14], radius=24, fill=None, outline=(120, 225, 255, 230), width=12,
+    )
+    draw.text((540, vy0 + 44), "PROTECTIVE pH 7.0 MUCUS SHIELD", font=_font(26), fill=(120, 230, 255), anchor="mm")
+
+    # Bubbling pH 1.5 acid fluid wave
+    fluid_pts = [(vx0 + 26, vy1 - 24)]
+    for x in range(vx0 + 26, vx1 - 25, 22):
+        wy = 700 + int(14 * math.sin(x * 0.03 + t * 5.0))
+        fluid_pts.append((x, wy))
+    fluid_pts.append((vx1 - 26, vy1 - 24))
+    draw.polygon(fluid_pts, fill=(190, 235, 25, 190), outline=(235, 255, 70, 245))
+
+    # Rising HCl bubbles
+    for b in range(8):
+        bx = 270 + b * 78
+        by = 1015 - int((t * 145 + b * 65) % 280)
+        br = 8 + (b % 3) * 4
+        draw.ellipse([bx - br, by - br, bx + br, by + br], outline=(255, 255, 160, 235), width=3)
+
+    # Dissolving steel bar gauge in center
+    fade = max(0.18, 1.0 - prog * 0.78)
+    bar_half = int(140 * fade)
+    draw.rectangle(
+        [540 - bar_half, 835, 540 + bar_half, 875],
+        fill=(185, 195, 210, int(255 * fade)), outline=(255, 120, 80, 230), width=3,
+    )
+    draw.text((540, 855), "STAINLESS METAL BAR", font=_font(22), fill=(20, 25, 30), anchor="mm")
+    draw.text((540, 425), f"INTERNAL ACIDITY: pH 1.5  |  CELL RENEWAL: DAY {1 + int(prog * 3)}/4", font=_font(31),
+              fill=(235, 255, 70), anchor="mm")
+    return canvas
+
+
+def _render_procedural_subsea_cables_frame(t: float, total: float) -> Image.Image:
+    """Render transoceanic fiber-optic cables & animated terabit data packets."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (6, 14, 30, 255))
+    draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (20, 45, 85, 105))
+
+    # Stylized continent hubs (X=120..960, Y=520..1070)
+    hubs = [
+        (210, 650, "US EAST"),
+        (245, 920, "SOUTH AM"),
+        (540, 595, "EUROPE"),
+        (560, 915, "AFRICA"),
+        (855, 715, "INDIA / ASIA"),
+        (865, 975, "PACIFIC"),
+    ]
+    links = [(0, 2), (0, 1), (2, 3), (2, 4), (3, 4), (4, 5), (0, 4)]
+
+    # Draw glowing subsea fiber curves + rushing data photons
+    for idx, (a, b) in enumerate(links):
+        x0, y0, _ = hubs[a]
+        x1, y1, _ = hubs[b]
+        draw.line([(x0, y0), (x1, y1)], fill=(0, 195, 255, 175), width=6)
+        for p_i in range(2):
+            u = (t * 0.55 + idx * 0.17 + p_i * 0.5) % 1.0
+            px = int(x0 + (x1 - x0) * u)
+            py = int(y0 + (y1 - y0) * u)
+            draw.ellipse([px - 10, py - 10, px + 10, py + 10], fill=(255, 235, 80, 255))
+
+    for hx, hy, label in hubs:
+        draw.rounded_rectangle(
+            [hx - 78, hy - 28, hx + 78, hy + 28],
+            radius=14, fill=(14, 38, 72, 240), outline=(75, 175, 255, 255), width=3,
+        )
+        draw.text((hx, hy), label, font=_font(22), fill=(255, 255, 255), anchor="mm")
+
+    draw.text((540, 425), "OCEAN CABLES: 99% DATA  |  SATELLITES: < 1%", font=_font(32), fill=(75, 215, 255),
+              anchor="mm")
+    draw.text((540, 1110), "550+ ACTIVE LINES  |  1.4 MILLION KM UNDERWATER", font=_font(27), fill=(255, 215, 0),
+              anchor="mm")
+    return canvas
+
+
+def _render_procedural_cleopatra_timeline_frame(t: float, total: float) -> Image.Image:
+    """Render proportional timeline ruler: 2560 BCE Pyramids -> 30 BCE Cleopatra -> 2007 CE iPhone."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (24, 16, 12, 255))
+    draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (65, 42, 28, 95))
+    prog = min(1.0, t / max(1.0, total * 0.85))
+
+    # Proportional positions along X=140..940 covering [-2560 .. +2026]
+    def _year_x(yr: int) -> int:
+        return int(140 + ((yr - (-2560)) / (2026 - (-2560))) * 800)
+
+    x_giza = _year_x(-2560)
+    x_cleo = _year_x(-30)
+    x_iph = _year_x(2007)
+    y_axis = 795
+
+    draw.line([(120, y_axis), (960, y_axis)], fill=(255, 195, 120, 220), width=6)
+
+    # Gap 1: Giza -> Cleopatra (2,530 yrs)
+    w1_x = int(x_giza + (x_cleo - x_giza) * min(1.0, prog * 1.4))
+    draw.rectangle([x_giza, y_axis - 95, w1_x, y_axis - 35], fill=(255, 115, 60, 200), outline=(255, 185, 90, 255),
+                   width=3)
+    if prog > 0.35:
+        draw.text(((x_giza + x_cleo) // 2, y_axis - 65), "2,530 YEARS GAP", font=_font(26), fill=(255, 255, 255),
+                  anchor="mm")
+
+    # Gap 2: Cleopatra -> iPhone (2,037 yrs)
+    if prog > 0.4:
+        p2 = min(1.0, (prog - 0.4) / 0.55)
+        w2_x = int(x_cleo + (x_iph - x_cleo) * p2)
+        draw.rectangle([x_cleo, y_axis + 35, w2_x, y_axis + 95], fill=(0, 205, 185, 200), outline=(90, 255, 220, 255),
+                       width=3)
+        if p2 > 0.5:
+            draw.text(((x_cleo + x_iph) // 2, y_axis + 65), "2,037 YEARS (SHORTER!)", font=_font(24),
+                      fill=(255, 255, 255), anchor="mm")
+
+    # Milestone pins
+    for mx, lbl, yr_str, y_off in [
+        (x_giza, "GREAT PYRAMID", "2560 BCE", -165),
+        (x_cleo, "CLEOPATRA", "30 BCE", -165),
+        (x_iph, "IPHONE 1", "2007 CE", 165),
+    ]:
+        draw.ellipse(
+            [mx - 14, y_axis - 14, mx + 14, y_axis + 14],
+            fill=(255, 215, 0, 255), outline=(255, 255, 255, 255), width=3,
+        )
+        draw.text((mx, y_axis + y_off), lbl, font=_font(24), fill=(255, 215, 130), anchor="mm")
+        draw.text((mx, y_axis + y_off + 30), yr_str, font=_font(22), fill=(240, 240, 245), anchor="mm")
+
+    draw.text(
+        (540, 425),
+        "TO CLEOPATRA, PYRAMIDS WERE ANCIENT RUINS!",
+        font=_font(31),
+        fill=(255, 195, 90),
+        anchor="mm",
+    )
+    return canvas
+
+
+def _render_procedural_rule_72_frame(t: float, total: float) -> Image.Image:
+    """Render animated doubling speed bars for Rule of 72 across 2%, 6%, 10%, 15%."""
+    canvas = Image.new("RGBA", (SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT), (6, 22, 14, 255))
+    draw = ImageDraw.Draw(canvas)
+    _draw_center_grid(draw, (18, 65, 40, 95))
+    prog = min(1.0, t / max(1.0, total * 0.85))
+
+    rows = [
+        ("2% SAVINGS ACCOUNT", 36.0, (255, 95, 95)),
+        ("6% BOND PORTFOLIO", 12.0, (255, 190, 60)),
+        ("10% S&P INDEX AVG", 7.2, (0, 220, 255)),
+        ("15% HIGH COMPOUND", 4.8, (50, 245, 130)),
+    ]
+    draw.text((540, 425), "FORMULA: 72 / RATE % = YEARS TO DOUBLE", font=_font(32), fill=(255, 215, 0), anchor="mm")
+
+    for idx, (lbl, yrs, col) in enumerate(rows):
+        y0 = 515 + idx * 145
+        fill_frac = min(1.0, (prog * 36.0) / yrs)
+        draw.text((120, y0), f"{lbl}  ->  {yrs:g} YRS", font=_font(28), fill=(240, 250, 245), anchor="lm")
+        draw.rounded_rectangle([120, y0 + 28, 960, y0 + 82], radius=16, fill=(14, 34, 24, 235),
+                               outline=(*col, 195), width=3)
+        bar_w = int(128 + (952 - 128) * max(0.03, fill_frac))
+        draw.rounded_rectangle([128, y0 + 36, bar_w, y0 + 74], radius=11, fill=(*col, 235))
+        pct_txt = "2X DOUBLED!" if fill_frac >= 0.99 else f"{int(fill_frac * 100)}%"
+        draw.text((540, y0 + 55), pct_txt, font=_font(25), fill=(10, 18, 14) if fill_frac > 0.55 else (245, 255, 250),
+                  anchor="mm")
+    return canvas
+
+
 def _render_category_procedural_frame(topic: dict[str, Any], t: float, total: float) -> Image.Image:
     """Dispatch category-specific 60FPS procedural visuals when no PD photo is needed or available."""
     ck = topic["category_key"]
@@ -863,23 +1307,31 @@ def _build_photo_panel_frame(
     topic: dict[str, Any],
     t: float,
     total: float,
+    bg_cache: dict[int, Image.Image] | None = None,
 ) -> Image.Image:
-    """Render photo-driven category frame with Ken Burns cuts, or procedural engine fallback."""
+    """Render photo-driven category frame with Ken Burns cuts, caching blurred backdrops."""
     acc = topic["accent"]
     bg_rgb = topic["bg_rgb"]
     if not imgs:
         return _render_category_procedural_frame(topic, t, total)
     scene_len = max(3.5, total / max(3, len(imgs) * 2))
     s_idx = int(t / scene_len)
-    im = imgs[s_idx % len(imgs)]
+    img_slot = s_idx % len(imgs)
+    im = imgs[img_slot]
     sub_prog = (t % scene_len) / scene_len
     zoom = 1.04 + 0.16 * sub_prog
     pan = math.sin(s_idx * 1.7 + sub_prog * 2.0) * 0.45
 
-    bg_fit = _fit_cover_zoom(im, SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT, zoom=1.1)
-    bg = bg_fit.filter(ImageFilter.GaussianBlur(26))
-    dark = Image.new("RGBA", bg.size, (bg_rgb[0], bg_rgb[1], bg_rgb[2], 140))
-    canvas = Image.alpha_composite(bg.convert("RGBA"), dark)
+    if bg_cache is not None and img_slot in bg_cache:
+        canvas = bg_cache[img_slot].copy()
+    else:
+        bg_fit = _fit_cover_zoom(im, SHORTS_ASPECT_WIDTH, SHORTS_ASPECT_HEIGHT, zoom=1.1)
+        bg = bg_fit.filter(ImageFilter.GaussianBlur(26))
+        dark = Image.new("RGBA", bg.size, (bg_rgb[0], bg_rgb[1], bg_rgb[2], 140))
+        base = Image.alpha_composite(bg.convert("RGBA"), dark)
+        if bg_cache is not None:
+            bg_cache[img_slot] = base
+        canvas = base.copy()
 
     # Mid viewport card (960x740 window at Y=395..1145)
     fg = _fit_cover_zoom(im, 960, 740, zoom=zoom, pan_x=pan)
@@ -901,22 +1353,30 @@ def _render_frame_sequence(
     n_frames = max(1, int(math.ceil(duration_s * fps)))
     mtype = topic["media_source"]["type"]
     stages_n = len(topic["stages"])
+    bg_cache: dict[int, Image.Image] = {}
+
+    procedural_dispatch = {
+        "procedural_illusion": _render_procedural_illusion_frame,
+        "procedural_spiral": _render_procedural_spiral_frame,
+        "procedural_gps": _render_procedural_gps_frame,
+        "procedural_wealth": _render_procedural_wealth_frame,
+        "procedural_stomach_acid": _render_procedural_stomach_acid_frame,
+        "procedural_subsea_cables": _render_procedural_subsea_cables_frame,
+        "procedural_cleopatra_timeline": _render_procedural_cleopatra_timeline_frame,
+        "procedural_rule_72": _render_procedural_rule_72_frame,
+    }
 
     for i in range(n_frames):
         t = i / fps
         prog = t / max(0.01, duration_s)
         stage_idx = min(stages_n - 1, int(prog * stages_n))
-        if mtype == "procedural_illusion" and prog >= 0.72:
+        if mtype in {"procedural_illusion", "procedural_spiral"} and prog >= 0.72:
             stage_idx = stages_n - 1
 
-        if mtype == "procedural_illusion":
-            canvas = _render_procedural_illusion_frame(t, duration_s)
-        elif mtype == "procedural_gps":
-            canvas = _render_procedural_gps_frame(t, duration_s)
-        elif mtype == "procedural_wealth":
-            canvas = _render_procedural_wealth_frame(t, duration_s)
+        if mtype in procedural_dispatch:
+            canvas = procedural_dispatch[mtype](t, duration_s)
         else:
-            canvas = _build_photo_panel_frame(pd_imgs, topic, t, duration_s)
+            canvas = _build_photo_panel_frame(pd_imgs, topic, t, duration_s, bg_cache=bg_cache)
 
         _draw_hud_shell(canvas, topic, stage_idx, prog, t=t)
         # Brief 1-frame pattern-interrupt flash on beat boundaries (every 3.5s) to signal visual pacing cuts
@@ -1022,14 +1482,34 @@ def build_topic_short(
     }
 
 
-def build_all_global_shorts(out_dir: Path, catalog_path: Path, fps: int = 30) -> list[dict[str, Any]]:
-    """Generate one copyright-free Short per global top category and write catalog JSON."""
+def build_all_global_shorts(
+    out_dir: Path,
+    catalog_path: Path,
+    fps: int = 30,
+    skip_existing: bool = False,
+) -> list[dict[str, Any]]:
+    """Generate copyright-free Shorts across all global categories and write catalog JSON."""
+    existing_map: dict[str, dict[str, Any]] = {}
+    if skip_existing and catalog_path.exists():
+        try:
+            for item in json.loads(catalog_path.read_text(encoding="utf-8")):
+                if isinstance(item, dict) and item.get("id"):
+                    existing_map[item["id"]] = item
+        except Exception:
+            pass
+
     entries: list[dict[str, Any]] = []
     for topic in GLOBAL_VIRAL_TOPICS:
+        tid = topic["id"]
+        out_mp4 = out_dir / f"{tid}.mp4"
+        if skip_existing and tid in existing_map and out_mp4.exists() and out_mp4.stat().st_size > 100_000:
+            log.info("[%s] Reusing verified existing Short (%s)", tid, out_mp4.name)
+            entries.append(existing_map[tid])
+            continue
         entries.append(build_topic_short(topic, out_dir, fps=fps))
     catalog_path.parent.mkdir(parents=True, exist_ok=True)
     catalog_path.write_text(json.dumps(entries, indent=2, ensure_ascii=False), encoding="utf-8")
-    log.info("Generated %d Copyright-Free Viral Shorts → %s", len(entries), catalog_path)
+    log.info("Catalog updated with %d Copyright-Free Viral Shorts -> %s", len(entries), catalog_path)
     return entries
 
 
@@ -1042,6 +1522,7 @@ def main() -> None:
     parser.add_argument("--catalog-out", default="queue/copyright_free_catalog.json", help="Destination catalog JSON")
     parser.add_argument("--topic", help="Build single topic ID only (optional)")
     parser.add_argument("--fps", type=int, default=30, help="Output framerate (default: 30)")
+    parser.add_argument("--skip-existing", action="store_true", help="Reuse valid rendered .mp4 and catalog entries")
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir).resolve()
@@ -1055,7 +1536,7 @@ def main() -> None:
         log.info("Done: %s (%.1fs)", entry["video_path"], entry["duration_s"])
         return
 
-    build_all_global_shorts(out_dir, cat_path, fps=args.fps)
+    build_all_global_shorts(out_dir, cat_path, fps=args.fps, skip_existing=args.skip_existing)
 
 
 if __name__ == "__main__":
