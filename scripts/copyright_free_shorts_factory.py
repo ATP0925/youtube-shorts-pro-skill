@@ -300,7 +300,8 @@ GLOBAL_VIRAL_TOPICS: list[dict[str, Any]] = [
             "Would you take one million dollars today, or one penny doubled every day for thirty days? "
             "On day fifteen, that penny is only worth one hundred sixty three dollars while cash leads cleanly. "
             "Even on day twenty one, you barely hit ten thousand dollars and doubt your choice. "
-            "Watch week four: day twenty eight beats one point three million, and day thirty hits five point three million! "
+            "Watch week four: day twenty eight beats one point three million, "
+            "and day thirty hits five point three six million! "
             "Compounding looks invisible until it overtakes everything."
         ),
         "media_source": {"type": "procedural_wealth"},
